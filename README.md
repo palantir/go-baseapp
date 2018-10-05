@@ -55,6 +55,7 @@ The [example package](example/main.go) provides a full server that responds to
 
 You can start the server using:
 
+    ./godelw dep
     ./godelw run example
 
 Navigate to `http://localhost:8000/api/message` to see the output.
