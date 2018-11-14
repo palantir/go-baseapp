@@ -26,7 +26,7 @@ import (
 
 func RichErrorMarshalFunc(err error) interface{} {
 	switch err := err.(type) {
-	case *hatpear.PanicError:
+	case hatpear.PanicError:
 		return fmt.Sprintf("%+v", err)
 	default:
 		return errfmt.Print(err)
