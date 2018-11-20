@@ -28,6 +28,10 @@ const (
 	nanoTimeFormat = "2006-01-02T15:04:05.000000000Z07:00"
 )
 
+// DefaultParams returns a recommended set of parameters for servers. It
+// enables logging and configures logging, adds metrics, and adds default
+// middleware. All component parameters are exported and can be selected
+// individually if desired.
 func DefaultParams(logger zerolog.Logger, metricsPrefix string) []Param {
 	var registry metrics.Registry
 	if metricsPrefix == "" {
@@ -46,6 +50,7 @@ func DefaultParams(logger zerolog.Logger, metricsPrefix string) []Param {
 	}
 }
 
+// WithLogger sets a root logger used by the server.
 func WithLogger(logger zerolog.Logger) Param {
 	return func(b *Server) error {
 		b.logger = logger
@@ -53,6 +58,8 @@ func WithLogger(logger zerolog.Logger) Param {
 	}
 }
 
+// WithMiddleware sets middleware that is applied to all routes handled by the
+// server.
 func WithMiddleware(middleware ...func(http.Handler) http.Handler) Param {
 	return func(b *Server) error {
 		b.middleware = middleware
@@ -60,6 +67,7 @@ func WithMiddleware(middleware ...func(http.Handler) http.Handler) Param {
 	}
 }
 
+// WithUTCNanoTime adds a UTC timestamp with nanosecond precision to log lines.
 func WithUTCNanoTime() Param {
 	return func(b *Server) error {
 		zerolog.TimeFieldFormat = nanoTimeFormat
@@ -70,6 +78,7 @@ func WithUTCNanoTime() Param {
 	}
 }
 
+// WithErrorLogging sets a formatting function used to log errors.
 func WithErrorLogging(marshalFunc func(err error) interface{}) Param {
 	return func(b *Server) error {
 		zerolog.ErrorMarshalFunc = marshalFunc
@@ -77,6 +86,7 @@ func WithErrorLogging(marshalFunc func(err error) interface{}) Param {
 	}
 }
 
+// WithRegistry sets the metrics registry for the server.
 func WithRegistry(registry metrics.Registry) Param {
 	return func(b *Server) error {
 		b.registry = registry
@@ -84,6 +94,7 @@ func WithRegistry(registry metrics.Registry) Param {
 	}
 }
 
+// WithMetrics enables server and runtime metrics collection.
 func WithMetrics(interval time.Duration) Param {
 	return func(s *Server) error {
 		s.initMetrics = func() {

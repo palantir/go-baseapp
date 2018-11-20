@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package datadog defines configuration and functions for emitting metrics to
+// Datadog using the DogStatd protocol.
 package datadog
 
 import (

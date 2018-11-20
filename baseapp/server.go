@@ -26,6 +26,8 @@ import (
 	"goji.io"
 )
 
+// Server is the base server type. It is usually embedded in an
+// application-specific struct.
 type Server struct {
 	config     HTTPConfig
 	middleware []func(http.Handler) http.Handler
@@ -37,8 +39,10 @@ type Server struct {
 	init        sync.Once
 }
 
+// Param configures a Server instance.
 type Param func(b *Server) error
 
+// NewServer creates a Server instance from configuration and parameters.
 func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 	logger := zerolog.Nop()
 	base := &Server{
@@ -66,23 +70,27 @@ func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 	return base, nil
 }
 
+// HTTPConfig returns the server configuration.
 func (s *Server) HTTPConfig() HTTPConfig {
 	return s.config
 }
 
+// Mux returns the root mux for the server.
 func (s *Server) Mux() *goji.Mux {
 	return s.mux
 }
 
+// Logger returns the root logger for the server.
 func (s *Server) Logger() zerolog.Logger {
 	return s.logger
 }
 
+// Registry returns the root metrics registry for the server.
 func (s *Server) Registry() metrics.Registry {
 	return s.registry
 }
 
-// Start starts the server and is blocking
+// Start starts the server and blocks.
 func (s *Server) Start() error {
 	if s.initMetrics != nil {
 		s.init.Do(s.initMetrics)
@@ -93,6 +101,7 @@ func (s *Server) Start() error {
 	return http.ListenAndServe(addr, s.mux)
 }
 
+// WriteJSON writes a JSON response or an error if mashalling the object fails.
 func WriteJSON(w http.ResponseWriter, status int, obj interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 
