@@ -12,12 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package baseapp provides structure for building web application servers. It
+// select dependencies, provides default middleware, and defines several common
+// types, but is otherwise unopinionated.
 package baseapp
-
-// HTTPConfig contains options for HTTP servers. It is usually embedded in a
-// larger configuration struct.
-type HTTPConfig struct {
-	Address   string `yaml:"address" json:"address"`
-	Port      int    `yaml:"port" json:"port"`
-	PublicURL string `yaml:"public_url" json:"publicUrl"`
-}
