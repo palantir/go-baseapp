@@ -29,9 +29,9 @@ import (
 //  - Adds a logger to request contexts
 //  - Adds a metrics registry to request contexts
 //  - Adds a request ID to all requests and responses
-//	- Logs and records metrics for all requests
-//	- Handles errors returned by route handlers
-//	- Recovers from panics in route handlers
+//  - Logs and records metrics for all requests
+//  - Handles errors returned by route handlers
+//  - Recovers from panics in route handlers
 //
 // All components are exported so users can select individual middleware to
 // build their own stack if desired.
