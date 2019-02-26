@@ -18,12 +18,28 @@
   revision = "ffb42d5bb417aa8e12b3b7ff73d028b915dafa10"
 
 [[projects]]
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  pruneopts = "NUT"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
   name = "github.com/pkg/errors"
   packages = ["."]
   pruneopts = "NUT"
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
+
+[[projects]]
+  digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  pruneopts = "NUT"
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -56,12 +72,12 @@
   version = "v1.9.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4202ae4bc475052ad99562194dac3db816ee76f018b92cf2d699071f4c6e3f7a"
-  name = "github.com/syntaqx/go-metrics-datadog"
-  packages = ["."]
+  digest = "1:42e8c2456d7ec0f31e182c20022e74324c4da2cb3bd9069ff9b131fe33466308"
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
   pruneopts = "NUT"
-  revision = "defd050220648a3021b2bccfa09d15bcdffeea27"
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
 
 [[projects]]
   digest = "1:f23222558887a5919f8e9021ecb205395de463f031dd0c049e6e8e547b57c3f4"
@@ -96,12 +112,13 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/DataDog/datadog-go/statsd",
     "github.com/bluekeyes/hatpear",
     "github.com/pkg/errors",
     "github.com/rcrowley/go-metrics",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/hlog",
-    "github.com/syntaqx/go-metrics-datadog",
+    "github.com/stretchr/testify/assert",
     "goji.io",
     "goji.io/pat",
     "gopkg.in/yaml.v2",

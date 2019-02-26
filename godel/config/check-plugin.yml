@@ -3,3 +3,8 @@ checks:
     filters:
     - value: should have comment or be unexported
     - value: or a comment on this block
+  errcheck:
+    config:
+      exclude:
+        - (*github.com/palantir/go-baseapp/vendor/github.com/DataDog/datadog-go/statsd.Client).Count
+        - (*github.com/palantir/go-baseapp/vendor/github.com/DataDog/datadog-go/statsd.Client).Gauge
