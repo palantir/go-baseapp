@@ -16,7 +16,10 @@ package datadog
 
 import (
 	"testing"
+	"time"
 
+	"github.com/DataDog/datadog-go/statsd"
+	"github.com/rcrowley/go-metrics"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,7 +37,7 @@ func TestTagsFromName(t *testing.T) {
 	})
 
 	t.Run("multipleTags", func(t *testing.T) {
-		name, tags := tagsFromName("multiple[tag1,tag2:value]")
+		name, tags := tagsFromName("multiple[tag2:value,tag1]")
 		assert.Equal(t, "multiple", name)
 		assert.Equal(t, []string{"tag1", "tag2:value"}, tags)
 	})
@@ -45,3 +48,49 @@ func TestTagsFromName(t *testing.T) {
 		assert.Empty(t, tags)
 	})
 }
+
+func TestEmitCounts(t *testing.T) {
+	initialize := func() (*Emitter, *MemoryWriter, metrics.Registry) {
+		w := &MemoryWriter{}
+		c, _ := statsd.NewWithWriter(w)
+		r := metrics.NewRegistry()
+		return NewEmitter(c, r), w, r
+	}
+
+	t.Run("single", func(t *testing.T) {
+		e, w, r := initialize()
+		c := metrics.NewRegisteredCounter("counter", r)
+
+		c.Inc(1)
+		e.EmitOnce()
+
+		assert.Equal(t, int64(1), c.Count())
+		assert.Equal(t, []string{"counter:1|c"}, w.Messages)
+	})
+
+	t.Run("difference", func(t *testing.T) {
+		e, w, r := initialize()
+		c := metrics.NewRegisteredCounter("counter", r)
+
+		c.Inc(1)
+		e.EmitOnce()
+		c.Inc(2)
+		e.EmitOnce()
+
+		assert.Equal(t, int64(3), c.Count())
+		assert.Equal(t, []string{"counter:1|c", "counter:2|c"}, w.Messages)
+	})
+}
+
+type MemoryWriter struct {
+	Messages []string
+}
+
+func (mw *MemoryWriter) Write(b []byte) (int, error) {
+	mw.Messages = append(mw.Messages, string(b))
+	return len(b), nil
+}
+
+func (mw *MemoryWriter) Close() error { return nil }
+
+func (mw *MemoryWriter) SetWriteTimeout(t time.Duration) error { return nil }
