@@ -20,10 +20,20 @@
 //   metricName[tag1,tag2:value2,...]
 //
 // Global tags for all metrics can be set in the configuration.
+//
+// Note that rcrowley/go-metrics and DogStatsd define counters in different
+// ways: counters in DogStatsd are reported over an interval and reset to zero
+// at the start of each period while go-metrics counters are running totals
+// that are more like gauges with internal state. This package follows the
+// DogStatsd definition and reports the change in counter values between emmit
+// calls. The go-metrics behavior can be simulated at analysis time in Datadog
+// by taking cumulative sums.
 package datadog
 
 import (
 	"context"
+	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -70,12 +80,15 @@ func StartEmitter(s *baseapp.Server, c Config) error {
 type Emitter struct {
 	client   *statsd.Client
 	registry metrics.Registry
+
+	counters map[string]int64
 }
 
 func NewEmitter(client *statsd.Client, registry metrics.Registry) *Emitter {
 	return &Emitter{
 		registry: registry,
 		client:   client,
+		counters: make(map[string]int64),
 	}
 }
 
@@ -99,7 +112,14 @@ func (e *Emitter) EmitOnce() {
 
 		switch m := metric.(type) {
 		case metrics.Counter:
-			e.client.Count(name, m.Count(), tags, 1)
+			key := fmt.Sprintf("%s[%s]", name, strings.Join(tags, ","))
+
+			// DogStatds implements counts as per flush interval, while
+			// go-metrics implements counts as an increasing total. Reconcile
+			// this by reporting the difference in value between calls
+			value := m.Count()
+			value, e.counters[key] = value-e.counters[key], value
+			e.client.Count(name, value, tags, 1)
 
 		case metrics.Gauge:
 			e.client.Gauge(name, float64(m.Value()), tags, 1)
@@ -138,10 +158,16 @@ func (e *Emitter) EmitOnce() {
 	})
 }
 
+// tagsFromName extracts the tags from a metric name and returns the base name
+// and the sorted tags.
 func tagsFromName(name string) (string, []string) {
 	start := strings.IndexRune(name, '[')
 	if start < 0 || name[len(name)-1] != ']' {
 		return name, nil
 	}
-	return name[:start], strings.Split(name[start+1:len(name)-1], ",")
+
+	tags := strings.Split(name[start+1:len(name)-1], ",")
+	sort.Strings(tags)
+
+	return name[:start], tags
 }
