@@ -46,7 +46,7 @@ func DefaultParams(logger zerolog.Logger, metricsPrefix string) []Param {
 		WithMiddleware(DefaultMiddleware(logger, registry)...),
 		WithUTCNanoTime(),
 		WithErrorLogging(RichErrorMarshalFunc),
-		WithMetrics(10 * time.Second),
+		WithMetrics(),
 	}
 }
 
@@ -95,14 +95,9 @@ func WithRegistry(registry metrics.Registry) Param {
 }
 
 // WithMetrics enables server and runtime metrics collection.
-func WithMetrics(interval time.Duration) Param {
+func WithMetrics() Param {
 	return func(s *Server) error {
-		s.initMetrics = func() {
-			r := s.Registry()
-			RegisterDefaultMetrics(r)
-
-			go collectGoMetrics(r, interval)
-		}
+		s.initFns = append(s.initFns, func(s *Server) { RegisterDefaultMetrics(s.Registry()) })
 		return nil
 	}
 }

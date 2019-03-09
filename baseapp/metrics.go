@@ -64,8 +64,19 @@ func RegisterDefaultMetrics(registry metrics.Registry) {
 		metrics.GetOrRegisterCounter(key, registry)
 	}
 
-	metrics.GetOrRegisterGauge(MetricsKeyNumGoroutines, registry)
-	metrics.GetOrRegisterGauge(MetricsKeyMemoryUsed, registry)
+	registry.GetOrRegister(MetricsKeyNumGoroutines, func() metrics.Gauge {
+		return metrics.NewFunctionalGauge(func() int64 {
+			return int64(runtime.NumGoroutine())
+		})
+	})
+
+	registry.GetOrRegister(MetricsKeyMemoryUsed, func() metrics.Gauge {
+		return metrics.NewFunctionalGauge(func() int64 {
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			return int64(m.Alloc)
+		})
+	})
 }
 
 // CountRequest is an hlog access handler that records metrics about the
@@ -96,21 +107,4 @@ func bucketStatus(status int) string {
 		return MetricsKeyRequests5xx
 	}
 	return ""
-}
-
-func collectGoMetrics(registry metrics.Registry, interval time.Duration) {
-	var memStats runtime.MemStats
-
-	ticker := time.Tick(interval)
-	for range ticker {
-		if g := registry.Get(MetricsKeyNumGoroutines); g != nil {
-			num := runtime.NumGoroutine()
-			g.(metrics.Gauge).Update(int64(num))
-		}
-
-		if g := registry.Get(MetricsKeyMemoryUsed); g != nil {
-			runtime.ReadMemStats(&memStats)
-			g.(metrics.Gauge).Update(int64(memStats.Alloc))
-		}
-	}
 }

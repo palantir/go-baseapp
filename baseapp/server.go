@@ -34,9 +34,11 @@ type Server struct {
 	logger     zerolog.Logger
 	mux        *goji.Mux
 
-	registry    metrics.Registry
-	initMetrics func()
-	init        sync.Once
+	registry metrics.Registry
+
+	// functions that are called once on start
+	initFns []func(*Server)
+	init    sync.Once
 }
 
 // Param configures a Server instance.
@@ -92,9 +94,11 @@ func (s *Server) Registry() metrics.Registry {
 
 // Start starts the server and blocks.
 func (s *Server) Start() error {
-	if s.initMetrics != nil {
-		s.init.Do(s.initMetrics)
-	}
+	s.init.Do(func() {
+		for _, fn := range s.initFns {
+			fn(s)
+		}
+	})
 
 	addr := s.config.Address + ":" + strconv.Itoa(s.config.Port)
 	s.logger.Info().Msgf("Server listening on %s", addr)
