@@ -14,10 +14,16 @@
 
 package baseapp
 
+type TLSConfig struct {
+	CertificateFile string `yaml:"cert_file" json:"certFile"`
+	PrivateKeyFile  string `yaml:"private_key_file" json:"privateKeyFile"`
+}
+
 // HTTPConfig contains options for HTTP servers. It is usually embedded in a
 // larger configuration struct.
 type HTTPConfig struct {
-	Address   string `yaml:"address" json:"address"`
-	Port      int    `yaml:"port" json:"port"`
-	PublicURL string `yaml:"public_url" json:"publicUrl"`
+	Address   string     `yaml:"address" json:"address"`
+	Port      int        `yaml:"port" json:"port"`
+	PublicURL string     `yaml:"public_url" json:"publicUrl"`
+	TLSConfig *TLSConfig `yaml:"tls_config" json:"tlsConfig"`
 }

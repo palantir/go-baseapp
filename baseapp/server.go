@@ -102,6 +102,13 @@ func (s *Server) Start() error {
 
 	addr := s.config.Address + ":" + strconv.Itoa(s.config.Port)
 	s.logger.Info().Msgf("Server listening on %s", addr)
+
+	tlsConfig := s.config.TLSConfig
+
+	if tlsConfig != nil {
+		return http.ListenAndServeTLS(addr, s.config.TLSConfig.CertificateFile, s.config.TLSConfig.PrivateKeyFile, s.mux)
+	}
+
 	return http.ListenAndServe(addr, s.mux)
 }
 
