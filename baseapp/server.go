@@ -104,9 +104,8 @@ func (s *Server) Start() error {
 	s.logger.Info().Msgf("Server listening on %s", addr)
 
 	tlsConfig := s.config.TLSConfig
-
 	if tlsConfig != nil {
-		return http.ListenAndServeTLS(addr, s.config.TLSConfig.CertificateFile, s.config.TLSConfig.PrivateKeyFile, s.mux)
+		return http.ListenAndServeTLS(addr, tlsConfig.CertificateFile, tlsConfig.PrivateKeyFile, s.mux)
 	}
 
 	return http.ListenAndServe(addr, s.mux)
