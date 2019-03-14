@@ -15,8 +15,8 @@
 package baseapp
 
 type TLSConfig struct {
-	CertificateFile string `yaml:"cert_file" json:"certFile"`
-	PrivateKeyFile  string `yaml:"private_key_file" json:"privateKeyFile"`
+	CertFile string `yaml:"cert_file" json:"certFile"`
+	KeyFile  string `yaml:"key_file" json:"keyFile"`
 }
 
 // HTTPConfig contains options for HTTP servers. It is usually embedded in a
