@@ -15,6 +15,7 @@
 package baseapp
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -33,6 +34,7 @@ type Server struct {
 	middleware []func(http.Handler) http.Handler
 	logger     zerolog.Logger
 	mux        *goji.Mux
+	server     *http.Server
 
 	registry metrics.Registry
 
@@ -67,6 +69,13 @@ func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 
 	for _, middleware := range base.middleware {
 		base.mux.Use(middleware)
+	}
+
+	addr := c.Address + ":" + strconv.Itoa(c.Port)
+	base.server = &http.Server{
+		Addr:      addr,
+		Handler:   base.mux,
+		TLSConfig: &tls.Config{},
 	}
 
 	return base, nil
@@ -105,10 +114,10 @@ func (s *Server) Start() error {
 
 	tlsConfig := s.config.TLSConfig
 	if tlsConfig != nil {
-		return http.ListenAndServeTLS(addr, tlsConfig.CertFile, tlsConfig.KeyFile, s.mux)
+		return s.server.ListenAndServeTLS(tlsConfig.CertFile, tlsConfig.KeyFile)
 	}
 
-	return http.ListenAndServe(addr, s.mux)
+	return s.server.ListenAndServe()
 }
 
 // WriteJSON writes a JSON response or an error if mashalling the object fails.
