@@ -15,7 +15,6 @@
 package baseapp
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -73,9 +72,8 @@ func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 
 	addr := c.Address + ":" + strconv.Itoa(c.Port)
 	base.server = &http.Server{
-		Addr:      addr,
-		Handler:   base.mux,
-		TLSConfig: &tls.Config{},
+		Addr:    addr,
+		Handler: base.mux,
 	}
 
 	return base, nil
