@@ -70,6 +70,19 @@ func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 		base.mux.Use(middleware)
 	}
 
+	if base.server == nil {
+		base.server = &http.Server{}
+	}
+
+	if base.server.Addr == "" {
+		addr := c.Address + ":" + strconv.Itoa(c.Port)
+		base.server.Addr = addr
+	}
+
+	if base.server.Handler == nil {
+		base.server.Handler = base.mux
+	}
+
 	return base, nil
 }
 
