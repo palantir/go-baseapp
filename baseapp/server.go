@@ -33,6 +33,7 @@ type Server struct {
 	middleware []func(http.Handler) http.Handler
 	logger     zerolog.Logger
 	mux        *goji.Mux
+	server     *http.Server
 
 	registry metrics.Registry
 
@@ -69,6 +70,19 @@ func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 		base.mux.Use(middleware)
 	}
 
+	if base.server == nil {
+		base.server = &http.Server{}
+	}
+
+	if base.server.Addr == "" {
+		addr := c.Address + ":" + strconv.Itoa(c.Port)
+		base.server.Addr = addr
+	}
+
+	if base.server.Handler == nil {
+		base.server.Handler = base.mux
+	}
+
 	return base, nil
 }
 
@@ -102,7 +116,13 @@ func (s *Server) Start() error {
 
 	addr := s.config.Address + ":" + strconv.Itoa(s.config.Port)
 	s.logger.Info().Msgf("Server listening on %s", addr)
-	return http.ListenAndServe(addr, s.mux)
+
+	tlsConfig := s.config.TLSConfig
+	if tlsConfig != nil {
+		return s.server.ListenAndServeTLS(tlsConfig.CertFile, tlsConfig.KeyFile)
+	}
+
+	return s.server.ListenAndServe()
 }
 
 // WriteJSON writes a JSON response or an error if mashalling the object fails.

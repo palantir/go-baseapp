@@ -101,3 +101,10 @@ func WithMetrics() Param {
 		return nil
 	}
 }
+
+func WithHTTPServer(server *http.Server) Param {
+	return func(s *Server) error {
+		s.server = server
+		return nil
+	}
+}
