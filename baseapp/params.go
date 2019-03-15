@@ -16,6 +16,7 @@ package baseapp
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/rcrowley/go-metrics"
@@ -47,6 +48,7 @@ func DefaultParams(logger zerolog.Logger, metricsPrefix string) []Param {
 		WithUTCNanoTime(),
 		WithErrorLogging(RichErrorMarshalFunc),
 		WithMetrics(),
+		WithHTTPServer(nil),
 	}
 }
 
@@ -98,6 +100,22 @@ func WithRegistry(registry metrics.Registry) Param {
 func WithMetrics() Param {
 	return func(s *Server) error {
 		s.initFns = append(s.initFns, func(s *Server) { RegisterDefaultMetrics(s.Registry()) })
+		return nil
+	}
+}
+
+func WithHTTPServer(server *http.Server) Param {
+	return func(s *Server) error {
+		if server == nil {
+			addr := s.config.Address + ":" + strconv.Itoa(s.config.Port)
+			s.server = &http.Server{
+				Addr:    addr,
+				Handler: s.mux,
+			}
+		} else {
+			s.server = server
+		}
+
 		return nil
 	}
 }
