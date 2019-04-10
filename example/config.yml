@@ -3,7 +3,7 @@ server:
     port: 8080
 
 logging:
-    text: false
+    pretty: false
     level: debug
 
 app:

@@ -35,7 +35,7 @@ func NewLogger(c LoggingConfig) zerolog.Logger {
 
 	level, err := zerolog.ParseLevel(c.Level)
 	if err != nil {
-		logger.Warn().Str("level", c.Level).Msg("Failed to parse log level")
+		logger.Warn().Msgf("Invalid log level %q, using the default level instead", c.Level)
 		return logger
 	}
 
