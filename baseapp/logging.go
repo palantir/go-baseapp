@@ -18,26 +18,26 @@ import (
 	"io"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 )
 
-// ConfigureDefaultLogger returns a zerolog logger based on the conventions in a LoggingConfig
-func ConfigureDefaultLogger(c LoggingConfig) (zerolog.Logger, error) {
+// NewLogger returns a zerolog logger based on the conventions in a LoggingConfig
+func NewLogger(c LoggingConfig) zerolog.Logger {
 	out := io.Writer(os.Stdout)
-	if c.Text {
+	if c.Pretty {
 		out = zerolog.ConsoleWriter{Out: out}
 	}
 
 	logger := zerolog.New(out).With().Timestamp().Logger()
 	if c.Level == "" {
-		return logger, nil
+		return logger
 	}
 
 	level, err := zerolog.ParseLevel(c.Level)
 	if err != nil {
-		return logger, errors.Wrap(err, "failed to parse log level")
+		logger.Warn().Str("level", c.Level).Msg("Failed to parse log level")
+		return logger
 	}
 
-	return logger.Level(level), nil
+	return logger.Level(level)
 }

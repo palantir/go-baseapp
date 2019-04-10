@@ -32,5 +32,7 @@ type HTTPConfig struct {
 // It is usually embedded in a larger configuration struct.
 type LoggingConfig struct {
 	Level string `yaml:"level"`
-	Text  bool   `yaml:"text"`
+
+	// Pretty will make the output human-readable
+	Pretty bool `yaml:"pretty"`
 }

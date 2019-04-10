@@ -51,10 +51,7 @@ func main() {
 	}
 
 	// Configure a root logger for everything to use
-	logger, err := baseapp.ConfigureDefaultLogger(config.Logging)
-	if err != nil {
-		panic(err)
-	}
+	logger := baseapp.NewLogger(config.Logging)
 
 	// Create a server using the default options
 	serverParams := baseapp.DefaultParams(logger, "example.")
