@@ -31,8 +31,8 @@ type HTTPConfig struct {
 // LoggingConfig contains options for logging, such as log level and textual representation.
 // It is usually embedded in a larger configuration struct.
 type LoggingConfig struct {
-	Level string `yaml:"level"`
+	Level string `yaml:"level" json:"level"`
 
 	// Pretty will make the output human-readable
-	Pretty bool `yaml:"pretty"`
+	Pretty bool `yaml:"pretty" json:"pretty"`
 }
