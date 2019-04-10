@@ -28,7 +28,10 @@ func main() {
         Port:    "8000",
     }
 
-    logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+	logger, err := baseapp.ConfigureDefaultLogger(config.Logging)
+	if err != nil {
+		panic(err)
+	}
 
     // create a server with default options and no metrics prefix
     server, err := baseapp.NewServer(config, baseapp.DefaultParams(logger, "")...)

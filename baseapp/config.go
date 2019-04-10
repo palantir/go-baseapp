@@ -27,3 +27,10 @@ type HTTPConfig struct {
 	PublicURL string     `yaml:"public_url" json:"publicUrl"`
 	TLSConfig *TLSConfig `yaml:"tls_config" json:"tlsConfig"`
 }
+
+// LoggingConfig contains options for logging, such as log level and textual representation.
+// It is usually embedded in a larger configuration struct.
+type LoggingConfig struct {
+	Level string `yaml:"level"`
+	Text  bool   `yaml:"text"`
+}

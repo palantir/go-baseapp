@@ -2,5 +2,9 @@ server:
     address: 127.0.0.1
     port: 8080
 
+logging:
+    text: false
+    level: debug
+
 app:
     message: "The bird is the word."

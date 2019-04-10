@@ -16,7 +16,6 @@ package main
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/rs/zerolog"
 	"goji.io/pat"
@@ -52,7 +51,10 @@ func main() {
 	}
 
 	// Configure a root logger for everything to use
-	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+	logger, err := baseapp.ConfigureDefaultLogger(config.Logging)
+	if err != nil {
+		panic(err)
+	}
 
 	// Create a server using the default options
 	serverParams := baseapp.DefaultParams(logger, "example.")
