@@ -137,7 +137,7 @@ func WriteJSON(w http.ResponseWriter, status int, obj interface{}) {
 	b, err := json.Marshal(obj)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": %s}`, strconv.Quote(err.Error()))
+		_, _ = fmt.Fprintf(w, `{"error": %s}`, strconv.Quote(err.Error()))
 	} else {
 		w.WriteHeader(status)
 		_, _ = w.Write(b)
