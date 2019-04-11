@@ -25,8 +25,9 @@ import (
 )
 
 type Config struct {
-	Server  baseapp.HTTPConfig `yaml:"server"`
-	Datadog datadog.Config     `yaml:"datadog"`
+	Server  baseapp.HTTPConfig    `yaml:"server"`
+	Datadog datadog.Config        `yaml:"datadog"`
+	Logging baseapp.LoggingConfig `yaml:"logging"`
 
 	App AppConfig `yaml:"app"`
 }

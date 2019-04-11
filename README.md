@@ -27,8 +27,12 @@ func main() {
         Address: "127.0.0.1",
         Port:    "8000",
     }
+    loggingConfig := baseapp.LoggingConfig{
+        Pretty: true,
+        Level: "debug",
+    }
 
-    logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+    logger := baseapp.NewLogger(loggingConfig)
 
     // create a server with default options and no metrics prefix
     server, err := baseapp.NewServer(config, baseapp.DefaultParams(logger, "")...)
