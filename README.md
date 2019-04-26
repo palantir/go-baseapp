@@ -122,6 +122,13 @@ If you only want some of these options, provide your own set of parameters with
 only the parts you want; all of the components are exported parts of this
 library or dependencies.
 
+### Graceful Shutdown
+
+`go-baseapp` can be optionally configured to gracefully stop the running server by handling SIGINT and SIGTERM.
+
+The parameter `ShutdownWaitTime` on the `baseapp.HTTPConfig` struct enables graceful shutdown, and
+also informs the server how long to wait during the shutdown process before terminating.
+
 ### Middleware
 
 The default middleware stack (`baseapp.DefaultMiddleware`) does the following:
@@ -153,46 +160,6 @@ If enabled, the server emits the following metrics:
 
 The `baseapp/datadog` package provides an easy way to publish metrics to
 Datadog. Other aggregators can be configured with custom code in a similar way.
-
-### Graceful Shutdown
-
-`go-baseapp` can be optionally configured to gracefully stop the running server by handling SIGINT and SIGTERM.
-
-Instead of calling `Start`, a client can call `StartAndStopGracefully`, while also setting an optional
-`ShutdownWaitTime` on the `baseapp.HTTPConfig` struct. This parameter informs the server how long to wait during
-the shutdown process before terminating.
-
-```go
-func main() {
-    config := baseapp.HTTPConfig{
-        Address:          "127.0.0.1",
-        Port:             "8000",
-        ShutdownWaitTime: 1 * time.Minute,
-    }
-    loggingConfig := baseapp.LoggingConfig{
-        Pretty: true,
-        Level: "debug",
-    }
-
-    logger := baseapp.NewLogger(loggingConfig)
-
-    // create a server with default options and no metrics prefix
-    server, err := baseapp.NewServer(config, baseapp.DefaultParams(logger, "")...)
-    if err != nil {
-        panic(err)
-    }
-
-    // register handlers
-    server.Mux().Handle(pat.Get("/hello"), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        baseapp.WriteJSON(w, http.StatusOK, map[string]string{
-            "message": fmt.Sprintf("Hello, %s!", r.FormValue("name")),
-        })
-    }))
-
-    // start the server, and stop gracefully (blocking)
-    server.StartAndStopGracefully()
-}
-```
 
 ## Contributing
 
