@@ -62,6 +62,7 @@ func LogRequest(r *http.Request, status, size int, elapsed time.Duration) {
 	hlog.FromRequest(r).Info().
 		Str("method", r.Method).
 		Str("path", r.URL.String()).
+		Str("client_ip", r.RemoteAddr).
 		Int("status", status).
 		Int("size", size).
 		Dur("elapsed", elapsed).
