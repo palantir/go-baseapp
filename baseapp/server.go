@@ -15,11 +15,16 @@
 package baseapp
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/rcrowley/go-metrics"
 	"github.com/rs/zerolog"
@@ -128,6 +133,35 @@ func (s *Server) Start() error {
 	}
 
 	return s.server.ListenAndServe()
+}
+
+// StartAndStopGracefully starts the server, blocks, and shutdowns gracefully
+func (s *Server) StartAndStopGracefully() {
+	go func() {
+		if err := s.Start(); err != nil {
+			s.logger.Error().Err(err).Msg("Shutting down server")
+		}
+	}()
+
+	// SIGKILL and SIGSTOP cannot be caught, so don't bother adding them here
+	interrupt := make(chan os.Signal, 2)
+	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+	select {
+	case <-interrupt:
+		s.logger.Info().Msg("Caught interrupt, gracefully shutting down")
+	}
+
+	var shutdownTime time.Duration
+	if s.config.ShutdownWaitTime != nil {
+		shutdownTime = *s.config.ShutdownWaitTime
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTime)
+	defer cancel()
+	if err := s.HTTPServer().Shutdown(ctx); err != nil {
+		s.logger.Fatal().Err(err).Msg("Failed shutting down gracefully")
+	}
+	os.Exit(0)
 }
 
 // WriteJSON writes a JSON response or an error if mashalling the object fails.
