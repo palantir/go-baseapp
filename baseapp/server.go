@@ -147,8 +147,7 @@ func (s *Server) Start() error {
 	}
 
 	go func() {
-		if err := s.start(); err != nil && err != http.ErrServerClosed {
-			s.logger.Error().Err(err).Msg("Shutting down server")
+		if err := s.start(); err != nil {
 			s.quit <- err
 		}
 	}()
@@ -161,7 +160,9 @@ func (s *Server) Start() error {
 	case <-interrupt:
 		s.logger.Info().Msg("Caught interrupt, gracefully shutting down")
 	case err := <-s.quit:
-		s.logger.Error().Msgf("Received error over quit channel: %v", err)
+		if err != http.ErrServerClosed {
+			s.logger.Error().Err(err).Msg("Shutting down server")
+		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), *s.config.ShutdownWaitTime)
