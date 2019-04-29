@@ -45,6 +45,8 @@ type Server struct {
 	// functions that are called once on start
 	initFns []func(*Server)
 	init    sync.Once
+
+	quit chan error
 }
 
 // Param configures a Server instance.
@@ -87,6 +89,8 @@ func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 	if base.server.Handler == nil {
 		base.server.Handler = base.mux
 	}
+
+	base.quit = make(chan error)
 
 	return base, nil
 }
@@ -143,8 +147,9 @@ func (s *Server) Start() error {
 	}
 
 	go func() {
-		if err := s.start(); err != nil {
+		if err := s.start(); err != nil && err != http.ErrServerClosed {
 			s.logger.Error().Err(err).Msg("Shutting down server")
+			s.quit <- err
 		}
 	}()
 
@@ -152,8 +157,12 @@ func (s *Server) Start() error {
 	interrupt := make(chan os.Signal, 2)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	<-interrupt
-	s.logger.Info().Msg("Caught interrupt, gracefully shutting down")
+	select {
+	case <-interrupt:
+		s.logger.Info().Msg("Caught interrupt, gracefully shutting down")
+	case err := <-s.quit:
+		s.logger.Error().Msgf("Received error over quit channel: %v", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), *s.config.ShutdownWaitTime)
 	defer cancel()
