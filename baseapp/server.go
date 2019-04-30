@@ -45,8 +45,6 @@ type Server struct {
 	// functions that are called once on start
 	initFns []func(*Server)
 	init    sync.Once
-
-	quit chan error
 }
 
 // Param configures a Server instance.
@@ -89,8 +87,6 @@ func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 	if base.server.Handler == nil {
 		base.server.Handler = base.mux
 	}
-
-	base.quit = make(chan error)
 
 	return base, nil
 }
@@ -146,9 +142,10 @@ func (s *Server) Start() error {
 		return s.start()
 	}
 
+	quit := make(chan error)
 	go func() {
 		if err := s.start(); err != nil {
-			s.quit <- err
+			quit <- err
 		}
 	}()
 
@@ -159,9 +156,9 @@ func (s *Server) Start() error {
 	select {
 	case <-interrupt:
 		s.logger.Info().Msg("Caught interrupt, gracefully shutting down")
-	case err := <-s.quit:
+	case err := <-quit:
 		if err != http.ErrServerClosed {
-			s.logger.Error().Err(err).Msg("Shutting down server")
+			return err
 		}
 	}
 
