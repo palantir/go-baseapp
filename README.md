@@ -122,6 +122,13 @@ If you only want some of these options, provide your own set of parameters with
 only the parts you want; all of the components are exported parts of this
 library or dependencies.
 
+### Graceful Shutdown
+
+`go-baseapp` can be optionally configured to gracefully stop the running server by handling SIGINT and SIGTERM.
+
+The parameter `ShutdownWaitTime` on the `baseapp.HTTPConfig` struct enables graceful shutdown, and
+also informs the server how long to wait during the shutdown process before terminating.
+
 ### Middleware
 
 The default middleware stack (`baseapp.DefaultMiddleware`) does the following:
