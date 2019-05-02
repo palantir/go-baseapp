@@ -35,8 +35,8 @@ func RichErrorMarshalFunc(err error) interface{} {
 	}
 }
 
-// HandleRouteError is a hatpear error handler that logs the error and sends a
-// 500 Internal Server Error response to clients.
+// HandleRouteError is a hatpear error handler that logs the error and sends
+// an error response to the client
 func HandleRouteError(w http.ResponseWriter, r *http.Request, err error) {
 	hlog.FromRequest(r).
 		Error().
@@ -45,7 +45,16 @@ func HandleRouteError(w http.ResponseWriter, r *http.Request, err error) {
 		Err(err).
 		Msg("Unhandled error while serving route")
 
-	WriteJSON(w, http.StatusInternalServerError, map[string]string{
-		"error": http.StatusText(http.StatusInternalServerError),
-	})
+	// Either the deadline has passed or the request was canceled
+	// 499 is an NGINX style response code for 'Client Closed Connection'
+	// and is a non-standard, but widely used, HTTP status code
+	if cerr := r.Context().Err(); cerr != nil {
+		WriteJSON(w, 499, map[string]string{
+			"error": "Client Closed Connection",
+		})
+	} else {
+		WriteJSON(w, http.StatusInternalServerError, map[string]string{
+			"error": http.StatusText(http.StatusInternalServerError),
+		})
+	}
 }
