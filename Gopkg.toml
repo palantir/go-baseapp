@@ -2,3 +2,8 @@
   go-tests = true
   non-go = true
   unused-packages = true
+
+
+[[constraint]]
+  name = "github.com/crewjam/saml"
+  branch = "master"

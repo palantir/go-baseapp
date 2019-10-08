@@ -10,6 +10,14 @@
   version = "2.1.0"
 
 [[projects]]
+  digest = "1:15e3271f463f2f40d98bf426aabb86941fc66b10272ccfdfebe548683e37acb1"
+  name = "github.com/beevik/etree"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "8aee6516be3b1163bb6450c35c50e4969e3a3aa8"
+  version = "v1.1.0"
+
+[[projects]]
   branch = "master"
   digest = "1:dd49560573b3eeb2993a036b2dfebf301b7ed2c9220a77322b0747f0257cebdc"
   name = "github.com/bluekeyes/hatpear"
@@ -18,12 +26,32 @@
   revision = "ffb42d5bb417aa8e12b3b7ff73d028b915dafa10"
 
 [[projects]]
+  branch = "master"
+  digest = "1:0f7aba495a03f771f2b79f58253dbce5556b03a3d9c27e538b2e6a1c9851ee28"
+  name = "github.com/crewjam/saml"
+  packages = [
+    ".",
+    "logger",
+    "xmlenc",
+  ]
+  pruneopts = "NUT"
+  revision = "344d075952c9343809f57f4e465504dd5e3068a4"
+
+[[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   pruneopts = "NUT"
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
   version = "v1.1.1"
+
+[[projects]]
+  digest = "1:6b1eae4bb93e5ccd23cb09d1e005ecb391316d27701b7a5264f8555a6e2f3d87"
+  name = "github.com/jonboulle/clockwork"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "2eee05ed794112d45db504eb05aa693efd2b8b09"
+  version = "v0.1.0"
 
 [[projects]]
   digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
@@ -72,6 +100,18 @@
   version = "v1.9.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:61ceb5558efc2cddc251dbec312749caf8a0a8e3f8aca237e138f9260aa4a958"
+  name = "github.com/russellhaering/goxmldsig"
+  packages = [
+    ".",
+    "etreeutils",
+    "types",
+  ]
+  pruneopts = "NUT"
+  revision = "7acd5e4a6ef74fe1b082c20f119556adf70c3944"
+
+[[projects]]
   digest = "1:42e8c2456d7ec0f31e182c20022e74324c4da2cb3bd9069ff9b131fe33466308"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
@@ -101,6 +141,14 @@
   version = "v2.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:1fa95129371749532e2ac8b93a0016c549ebe77f25c6fad296b6ee271fae2fd6"
+  name = "golang.org/x/crypto"
+  packages = ["ripemd160"]
+  pruneopts = "NUT"
+  revision = "34f69633bfdcf9db92f698f8487115767eebef81"
+
+[[projects]]
   digest = "1:18108594151654e9e696b27b181b953f9a90b16bf14d253dd1b397b025a1487f"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -114,6 +162,7 @@
   input-imports = [
     "github.com/DataDog/datadog-go/statsd",
     "github.com/bluekeyes/hatpear",
+    "github.com/crewjam/saml",
     "github.com/pkg/errors",
     "github.com/rcrowley/go-metrics",
     "github.com/rs/zerolog",
