@@ -169,3 +169,10 @@ func WithServiceProvider(s *saml.ServiceProvider) Param {
 		return nil
 	}
 }
+
+func WithNameIDFormat(n saml.NameIDFormat) Param {
+	return func(sp *ServiceProvider) error {
+		sp.sp.AuthnNameIDFormat = n
+		return nil
+	}
+}
