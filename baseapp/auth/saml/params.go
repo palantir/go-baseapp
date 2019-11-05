@@ -113,7 +113,18 @@ func WithEntityFromBytes(metadata []byte) Param {
 		var entity saml.EntityDescriptor
 
 		if err := xml.Unmarshal(metadata, &entity); err != nil {
-			return errors.Wrap(err, "could not parse returned metadata")
+			var entities saml.EntitiesDescriptor
+
+			if err := xml.Unmarshal(metadata, &entities); err != nil {
+				return errors.Wrap(err, "could not parse returned metadata")
+			}
+
+			if len(entities.EntityDescriptors) == 0 {
+				return errors.New("metadata did not contain an entity")
+			}
+
+			entity = entities.EntityDescriptors[0]
+
 		}
 		sp.sp.IDPMetadata = &entity
 		return nil
