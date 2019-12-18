@@ -27,7 +27,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0f7aba495a03f771f2b79f58253dbce5556b03a3d9c27e538b2e6a1c9851ee28"
+  digest = "1:abea1823efa81fdf35fe4002763ed046c433c50d19afcaad403965ec50921b8e"
   name = "github.com/crewjam/saml"
   packages = [
     ".",
@@ -35,7 +35,7 @@
     "xmlenc",
   ]
   pruneopts = "NUT"
-  revision = "344d075952c9343809f57f4e465504dd5e3068a4"
+  revision = "861266e3a689a963b9a9285bb2152d201db92ef5"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"

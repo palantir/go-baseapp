@@ -132,6 +132,9 @@ func WithEntityFromBytes(metadata []byte) Param {
 
 }
 
+// WithACSPath sets the path where the assertion consumer handler for the
+// service provider is registered. The path is included in generated metadata.
+// This is a required parameter.
 func WithACSPath(path string) Param {
 	return func(sp *ServiceProvider) error {
 		sp.acsPath = path
@@ -139,9 +142,21 @@ func WithACSPath(path string) Param {
 	}
 }
 
+// WithMetadataPath sets the path where the metadata handler for the service
+// provider is registered. The path is included in generated metadata. This is
+// a required parameter.
 func WithMetadataPath(path string) Param {
 	return func(sp *ServiceProvider) error {
 		sp.metadataPath = path
+		return nil
+	}
+}
+
+// WithLogoutPath sets the path where the single logout handler for the service
+// provider is registered. The path is included in generated metadata.
+func WithLogoutPath(path string) Param {
+	return func(sp *ServiceProvider) error {
+		sp.logoutPath = path
 		return nil
 	}
 }
