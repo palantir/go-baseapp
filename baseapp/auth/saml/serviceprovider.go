@@ -56,14 +56,18 @@ type LoginCallback func(http.ResponseWriter, *http.Request, *saml.Assertion)
 // success conditions so that clients can take action after the auth flow is complete. It also provides a handler
 // for serving the service provider metadata XML.
 type ServiceProvider struct {
-	sp           *saml.ServiceProvider
+	sp *saml.ServiceProvider
+
 	acsPath      string
 	metadataPath string
 	logoutPath   string
-	forceTLS     bool
-	onError      ErrorCallback
-	onLogin      LoginCallback
-	idStore      IDStore
+
+	forceTLS          bool
+	disableEncryption bool
+
+	onError ErrorCallback
+	onLogin LoginCallback
+	idStore IDStore
 }
 
 type Param func(sp *ServiceProvider) error
@@ -203,6 +207,15 @@ func (s *ServiceProvider) MetadataHandler() http.Handler {
 		if s.logoutPath == "" {
 			// remove SingleLogoutService elements if the logout path is not set
 			metadata.SPSSODescriptors[0].SSODescriptor.SingleLogoutServices = nil
+		}
+		if s.disableEncryption {
+			// remove encryption keys from metadata
+			role := &(metadata.SPSSODescriptors[0].SSODescriptor.RoleDescriptor)
+			for i, k := range role.KeyDescriptors {
+				if k.Use == "encryption" {
+					role.KeyDescriptors = append(role.KeyDescriptors[:i], role.KeyDescriptors[i+1:]...)
+				}
+			}
 		}
 
 		md, err := xml.Marshal(metadata)

@@ -202,3 +202,13 @@ func WithNameIDFormat(n saml.NameIDFormat) Param {
 		return nil
 	}
 }
+
+// WithEncryptedAssertions enables or disables assertion encryption. By
+// default, encryption is enabled. When set to false, the encryption key is not
+// included in generated metadata.
+func WithEncryptedAssertions(encrypt bool) Param {
+	return func(sp *ServiceProvider) error {
+		sp.disableEncryption = !encrypt
+		return nil
+	}
+}
