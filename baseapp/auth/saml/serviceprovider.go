@@ -59,6 +59,7 @@ type ServiceProvider struct {
 	sp           *saml.ServiceProvider
 	acsPath      string
 	metadataPath string
+	logoutPath   string
 	forceTLS     bool
 	onError      ErrorCallback
 	onLogin      LoginCallback
@@ -118,8 +119,7 @@ func DefaultLoginCallback(w http.ResponseWriter, r *http.Request, resp *saml.Ass
 }
 
 func (s *ServiceProvider) getSAMLSettingsForRequest(r *http.Request) *saml.ServiceProvider {
-
-	//make a copy in case different requests have different host headers
+	// make a copy in case different requests have different host headers
 	newSP := *s.sp
 
 	u := url.URL{
@@ -133,8 +133,12 @@ func (s *ServiceProvider) getSAMLSettingsForRequest(r *http.Request) *saml.Servi
 
 	u.Path = s.metadataPath
 	newSP.MetadataURL = u
+
 	u.Path = s.acsPath
 	newSP.AcsURL = u
+
+	u.Path = s.logoutPath
+	newSP.SloURL = u
 
 	return &newSP
 }
@@ -191,7 +195,17 @@ func (s *ServiceProvider) ACSHandler() http.Handler {
 // MetadataHandler returns an http.Handler which sends the generated metadata XML in response to a request
 func (s *ServiceProvider) MetadataHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		md, err := xml.Marshal(s.getSAMLSettingsForRequest(r).Metadata())
+		metadata := s.getSAMLSettingsForRequest(r).Metadata()
+
+		// post-process the metadata to account for issues in crewjam/saml
+		// struct navigation is hardcoded for the return value at implementation time
+
+		if s.logoutPath == "" {
+			// remove SingleLogoutService elements if the logout path is not set
+			metadata.SPSSODescriptors[0].SSODescriptor.SingleLogoutServices = nil
+		}
+
+		md, err := xml.Marshal(metadata)
 		if err != nil {
 			s.onError(w, r, newError(errors.Wrap(err, "failed to generate service provider metadata"), http.StatusInternalServerError))
 			return
