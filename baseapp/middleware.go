@@ -66,6 +66,7 @@ func LogRequest(r *http.Request, status, size int, elapsed time.Duration) {
 		Int("status", status).
 		Int("size", size).
 		Dur("elapsed", elapsed).
+		Str("user_agent", r.UserAgent()).
 		Msg("http_request")
 }
 
