@@ -57,7 +57,7 @@ func NewMetricsHandler(registry metrics.Registry) func(http.Handler) http.Handle
 	}
 }
 
-// LogRequest is an hlog access handler that logs request information.
+// LogRequest is an AccessCallback that logs request information.
 func LogRequest(r *http.Request, status int, size int64, elapsed time.Duration) {
 	hlog.FromRequest(r).Info().
 		Str("method", r.Method).
@@ -70,7 +70,7 @@ func LogRequest(r *http.Request, status int, size int64, elapsed time.Duration) 
 		Msg("http_request")
 }
 
-// RecordRequest is an hlog access handler that logs request information and
+// RecordRequest is an AccessCallback that logs request information and
 // records request metrics.
 func RecordRequest(r *http.Request, status int, size int64, elapsed time.Duration) {
 	LogRequest(r, status, size, elapsed)
