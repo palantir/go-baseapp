@@ -17,11 +17,10 @@ package main
 import (
 	"net/http"
 
-	"github.com/rs/zerolog"
-	"goji.io/pat"
-
 	"github.com/palantir/go-baseapp/baseapp"
 	"github.com/palantir/go-baseapp/baseapp/datadog"
+	"github.com/rs/zerolog"
+	"goji.io/pat"
 )
 
 type MessageHandler struct {
