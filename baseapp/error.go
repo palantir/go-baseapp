@@ -20,10 +20,9 @@ import (
 	"net/http"
 
 	"github.com/bluekeyes/hatpear"
+	"github.com/palantir/go-baseapp/pkg/errfmt"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
-
-	"github.com/palantir/go-baseapp/pkg/errfmt"
 )
 
 // RichErrorMarshalFunc is a zerolog error marshaller that formats the error as
