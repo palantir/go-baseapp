@@ -77,7 +77,10 @@ func RecordRequest(r *http.Request, status int, size int64, elapsed time.Duratio
 	CountRequest(r, status, size, elapsed)
 }
 
-func AccessHandler(f func(r *http.Request, status int, size int64, duration time.Duration)) func(next http.Handler) http.Handler {
+type AccessCallback func(r *http.Request, status int, size int64, duration time.Duration)
+
+// AccessHandler returns a handler that call f after each request.
+func AccessHandler(f AccessCallback) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
