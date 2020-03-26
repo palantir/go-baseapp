@@ -9,7 +9,6 @@ plugins:
           linux-amd64: a2697b3d504bb37c2fd8831a66c7014927a6d94e4dfb9765b4764354370a1ab6
 environment:
   GO111MODULE: "on"
-  GOFLAGS: "-mod=vendor"
 exclude:
   names:
     - "\\..+"
