@@ -2,8 +2,8 @@ github.com/DataDog/datadog-go v0.0.0-20180330214955-e67964b4021a h1:zpQSzEApXM0q
 github.com/DataDog/datadog-go v0.0.0-20180330214955-e67964b4021a/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/beevik/etree v1.1.0 h1:T0xke/WvNtMoCqgzPhkX2r4rjY3GDZFi+FjpRZY2Jbs=
 github.com/beevik/etree v1.1.0/go.mod h1:r8Aw8JqVegEf0w2fDnATrX9VpkMcyFeM0FhwO62wh+A=
-github.com/bluekeyes/hatpear v0.0.0-20180714193905-ffb42d5bb417 h1:8rYOiy08UqIuWFJrC+d6xKFbcRXlxacWKzi1Ttt2sPc=
-github.com/bluekeyes/hatpear v0.0.0-20180714193905-ffb42d5bb417/go.mod h1:D+WOahrNtu6OK0KiVoXY9h5j7IcEs5LYke+zJkMBsKg=
+github.com/bluekeyes/hatpear v0.1.1 h1:FA5diKynoYJi6YVTJPEDbe4MG6eA8h+7LYHUlm8bppc=
+github.com/bluekeyes/hatpear v0.1.1/go.mod h1:2bh+rl4wLhqzzL0hT7Q4SVGXIivrE8oKgH2WYM3ubt0=
 github.com/crewjam/httperr v0.0.0-20190612203328-a946449404da/go.mod h1:+rmNIXRvYMqLQeR4DHyTvs6y0MEMymTz4vyFpFkKTPs=
 github.com/crewjam/saml v0.3.2-0.20191206212704-861266e3a689 h1:5/ntjhi4v0rV8c220jMR90268i6QkAWvg7QP6TT6HVs=
 github.com/crewjam/saml v0.3.2-0.20191206212704-861266e3a689/go.mod h1:fxbjgoFRea91JEzfcATb14uB+XPW1H88n0feRzehDeg=
