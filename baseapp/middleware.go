@@ -64,15 +64,21 @@ func NewMetricsHandler(registry metrics.Registry) func(http.Handler) http.Handle
 
 // LogRequest is an AccessCallback that logs request information.
 func LogRequest(r *http.Request, status int, size int64, elapsed time.Duration) {
-	hlog.FromRequest(r).Info().
+	event := hlog.FromRequest(r).Info().
 		Str("method", r.Method).
 		Str("path", r.URL.String()).
 		Str("client_ip", r.RemoteAddr).
 		Int("status", status).
 		Int64("size", size).
 		Dur("elapsed", elapsed).
-		Str("user_agent", r.UserAgent()).
-		Msg("http_request")
+		Str("user_agent", r.UserAgent())
+
+	span := trace.SpanFromContext(r.Context())
+	if span != nil && span.SpanContext().HasTraceID() {
+		event.Str("trace_id", span.SpanContext().TraceID.String())
+	}
+
+	event.Msg("http_request")
 }
 
 // RecordRequest is an AccessCallback that logs request information and
