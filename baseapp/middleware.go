@@ -22,6 +22,10 @@ import (
 	"github.com/rcrowley/go-metrics"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
+	"go.opentelemetry.io/otel/api/kv"
+	"go.opentelemetry.io/otel/api/trace"
+	"go.opentelemetry.io/otel/instrumentation/othttp"
+	"go.opentelemetry.io/otel/instrumentation/othttp/filters"
 )
 
 // DefaultMiddleware returns the default middleware stack. The stack:
@@ -40,6 +44,7 @@ func DefaultMiddleware(logger zerolog.Logger, registry metrics.Registry) []func(
 		hlog.NewHandler(logger),
 		NewMetricsHandler(registry),
 		hlog.RequestIDHandler("rid", "X-Request-ID"),
+		NewOtelHandler(),
 		AccessHandler(RecordRequest),
 		hatpear.Catch(HandleRouteError),
 		hatpear.Recover(),
@@ -87,6 +92,37 @@ func AccessHandler(f AccessCallback) func(next http.Handler) http.Handler {
 			wrapped := WrapWriter(w)
 			next.ServeHTTP(wrapped, r)
 			f(r, wrapped.Status(), wrapped.BytesWritten(), time.Since(start))
+		})
+	}
+}
+
+var DefaultOtelFilter = filters.None(
+	filters.PathPrefix("/ping"),
+	filters.PathPrefix("/api/ping"),
+	filters.PathPrefix("/health"),
+	filters.PathPrefix("/api/health"),
+	filters.PathPrefix("/debug"),
+	filters.PathPrefix("/api/debug"),
+	filters.PathPrefix("/pprof"),
+	filters.PathPrefix("/api/pprof"),
+)
+
+func NewOtelHandler() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requestID := ""
+			if xid, ok := hlog.IDFromRequest(r); ok {
+				requestID = xid.String()
+			}
+
+			h := othttp.NewHandler(next, r.URL.Hostname(),
+				othttp.WithMessageEvents(othttp.ReadEvents, othttp.WriteEvents),
+				othttp.WithFilter(DefaultOtelFilter),
+				othttp.WithSpanOptions(
+					trace.WithAttributes(
+						kv.String("request.id", requestID))),
+			)
+			h.ServeHTTP(w, r)
 		})
 	}
 }
