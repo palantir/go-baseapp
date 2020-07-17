@@ -20,6 +20,7 @@ import (
 
 	"github.com/rcrowley/go-metrics"
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/otel/api/global"
 )
 
 const (
@@ -47,6 +48,7 @@ func DefaultParams(logger zerolog.Logger, metricsPrefix string) []Param {
 		WithUTCNanoTime(),
 		WithErrorLogging(RichErrorMarshalFunc),
 		WithMetrics(),
+		WithTelemetryErrorLogging(),
 	}
 }
 
@@ -105,6 +107,15 @@ func WithMetrics() Param {
 func WithHTTPServer(server *http.Server) Param {
 	return func(s *Server) error {
 		s.server = server
+		return nil
+	}
+}
+
+// WithTelemetryErrorLogging sets a default global error handler for telemetry
+func WithTelemetryErrorLogging() Param {
+	return func(s *Server) error {
+		errorHandler := OpenTelemetryErrorHandler{logger: s.logger}
+		global.SetHandler(errorHandler)
 		return nil
 	}
 }
