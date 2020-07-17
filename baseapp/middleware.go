@@ -33,6 +33,7 @@ import (
 //  - Adds a logger to request contexts
 //  - Adds a metrics registry to request contexts
 //  - Adds a request ID to all requests and responses
+//  - Extracts Telemetry headers from requests
 //  - Logs and records metrics for all requests
 //  - Handles errors returned by route handlers
 //  - Recovers from panics in route handlers
