@@ -44,7 +44,7 @@ func DefaultMiddleware(logger zerolog.Logger, registry metrics.Registry) []func(
 		hlog.NewHandler(logger),
 		NewMetricsHandler(registry),
 		hlog.RequestIDHandler("rid", "X-Request-ID"),
-		NewTelemetryHandler(),
+		NewTelemetryHandler(DefaultOtelFilter),
 		AccessHandler(RecordRequest),
 		hatpear.Catch(HandleRouteError),
 		hatpear.Recover(),
@@ -113,7 +113,7 @@ var DefaultOtelFilter = filters.None(
 	filters.PathPrefix("/api/pprof"),
 )
 
-func NewTelemetryHandler() func(http.Handler) http.Handler {
+func NewTelemetryHandler(filter othttp.Filter) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			requestID := ""
@@ -123,7 +123,7 @@ func NewTelemetryHandler() func(http.Handler) http.Handler {
 
 			h := othttp.NewHandler(next, r.Host,
 				othttp.WithMessageEvents(othttp.ReadEvents, othttp.WriteEvents),
-				othttp.WithFilter(DefaultOtelFilter),
+				othttp.WithFilter(filter),
 				othttp.WithSpanOptions(
 					trace.WithAttributes(
 						kv.String("request.id", requestID))),
