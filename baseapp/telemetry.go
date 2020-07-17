@@ -19,11 +19,13 @@ import (
 
 	"go.opentelemetry.io/otel/api/trace"
 	"go.opentelemetry.io/otel/instrumentation/othttp"
+	goji "goji.io"
+	"goji.io/pat"
 )
 
-// TelemetryHandler wraps `othttp.WithRouteTag` to use the route tag value as the name of the span. By default the span
+// NamedTelemetryRouteHandler wraps `othttp.WithRouteTag` to use the route tag value as the name of the span. By default the span
 // name will be the name of the service defined in the exporters.
-func TelemetryHandler(route string, h http.Handler) http.Handler {
+func NamedTelemetryRouteHandler(route string, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		span := trace.SpanFromContext(r.Context())
 		span.SetName(route)
@@ -31,4 +33,20 @@ func TelemetryHandler(route string, h http.Handler) http.Handler {
 		handler := othttp.WithRouteTag(route, h)
 		handler.ServeHTTP(w, r)
 	})
+}
+
+type Mux struct {
+	*goji.Mux
+}
+
+func (m *Mux) HandleWithTelemetry(p *pat.Pattern, handler http.Handler) {
+	m.Handle(p, NamedTelemetryRouteHandler(p.String(), handler))
+}
+
+func NewMux() *Mux {
+	return &Mux{goji.NewMux()}
+}
+
+func SubMux() *Mux {
+	return &Mux{goji.SubMux()}
 }
