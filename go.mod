@@ -12,6 +12,7 @@ require (
 	github.com/rs/zerolog v1.9.1
 	github.com/stretchr/testify v1.6.1
 	go.opentelemetry.io/otel v0.8.0
+	go.opentelemetry.io/otel/exporters/otlp v0.8.0
 	goji.io v2.0.0+incompatible
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
 	google.golang.org/genproto v0.0.0-20200331122359-1ee6d9798940 // indirect
