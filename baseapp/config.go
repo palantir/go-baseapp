@@ -16,6 +16,7 @@ package baseapp
 
 import (
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -35,16 +36,27 @@ type HTTPConfig struct {
 	ShutdownWaitTime *time.Duration `yaml:"shutdown_wait_time" json:"shutdownWaitTime"`
 }
 
-// SetValuesFromEnv sets values in the configuration from coresponding
+// SetValuesFromEnv sets values in the configuration from corresponding
 // environment variables, if they exist. The optional prefix is added to the
 // start of the environment variable names.
 func (c *HTTPConfig) SetValuesFromEnv(prefix string) {
+	setStringFromEnv("ADDRESS", prefix, &c.Address)
+	setIntFromEnv("PORT", prefix, &c.Port)
 	setStringFromEnv("PUBLIC_URL", prefix, &c.PublicURL)
-}
 
-func setStringFromEnv(key, prefix string, value *string) {
-	if v, ok := os.LookupEnv(prefix + key); ok {
-		*value = v
+	var d time.Duration
+	if setDurationFromEnv("SHUTDOWN_WAIT_TIME", prefix, &d) {
+		c.ShutdownWaitTime = &d
+	}
+
+	var tls TLSConfig
+	if c.TLSConfig != nil {
+		tls = *c.TLSConfig
+	}
+	setStringFromEnv("TLS_CERT_FILE", prefix, &tls.CertFile)
+	setStringFromEnv("TLS_KEY_FILE", prefix, &tls.KeyFile)
+	if tls.CertFile != "" || tls.KeyFile != "" {
+		c.TLSConfig = &tls
 	}
 }
 
@@ -55,4 +67,50 @@ type LoggingConfig struct {
 
 	// Pretty will make the output human-readable
 	Pretty bool `yaml:"pretty" json:"pretty"`
+}
+
+// SetValuesFromEnv sets values in the configuration from corresponding
+// environment variables, if they exist. The optional prefix is added to the
+// start of the environment variable names.
+func (c *LoggingConfig) SetValuesFromEnv(prefix string) {
+	setStringFromEnv("LOG_LEVEL", prefix, &c.Level)
+	setBoolFromEnv("LOG_PRETTY", prefix, &c.Pretty)
+}
+
+func setStringFromEnv(key, prefix string, value *string) bool {
+	if v, ok := os.LookupEnv(prefix + key); ok {
+		*value = v
+		return true
+	}
+	return false
+}
+
+func setDurationFromEnv(key, prefix string, value *time.Duration) bool {
+	if v, ok := os.LookupEnv(prefix + key); ok {
+		if d, err := time.ParseDuration(v); err == nil {
+			*value = d
+			return true
+		}
+	}
+	return false
+}
+
+func setIntFromEnv(key, prefix string, value *int) bool {
+	if v, ok := os.LookupEnv(prefix + key); ok {
+		if i, err := strconv.Atoi(v); err == nil {
+			*value = i
+			return true
+		}
+	}
+	return false
+}
+
+func setBoolFromEnv(key, prefix string, value *bool) bool {
+	if v, ok := os.LookupEnv(prefix + key); ok {
+		if b, err := strconv.ParseBool(v); err == nil {
+			*value = b
+			return true
+		}
+	}
+	return false
 }
