@@ -39,7 +39,7 @@ type HTTPConfig struct {
 // environment variables, if they exist. The optional prefix is added to the
 // start of the environment variable names.
 func (c *HTTPConfig) SetValuesFromEnv(prefix string) {
-	setStringFromEnv("SERVER_PUBLIC_URL", prefix, &c.PublicURL)
+	setStringFromEnv("PUBLIC_URL", prefix, &c.PublicURL)
 }
 
 func setStringFromEnv(key, prefix string, value *string) {
