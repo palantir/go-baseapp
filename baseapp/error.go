@@ -26,9 +26,9 @@ import (
 	"github.com/rs/zerolog/hlog"
 )
 
-// HTTPError represents any error that presents itself as an HTTP error with a
+// httpError represents any error that presents itself as an HTTP error with a
 // status code.
-type HTTPError interface {
+type httpError interface {
 	StatusCode() int
 }
 
@@ -44,7 +44,8 @@ func RichErrorMarshalFunc(err error) interface{} {
 }
 
 // HandleRouteError is a hatpear error handler that logs the error and sends
-// an error response to the client
+// an error response to the client. If the error has a `StatusCode` function
+// this will be called and converted to an appropriate HTTP status code error.
 func HandleRouteError(w http.ResponseWriter, r *http.Request, err error) {
 	var log *zerolog.Event
 	// Either the deadline has passed or the request was canceled
@@ -59,15 +60,18 @@ func HandleRouteError(w http.ResponseWriter, r *http.Request, err error) {
 		log = hlog.FromRequest(r).Error().Err(err)
 
 		cause := errors.Cause(err)
-		if aerr, ok := cause.(HTTPError); ok {
-			http.Error(w, cause.Error(), aerr.StatusCode())
+		var errorMsg string
+		if aerr, ok := cause.(httpError); ok {
+			errorMsg = http.StatusText(aerr.StatusCode())
 		} else {
-			rid, _ := hlog.IDFromRequest(r)
-			WriteJSON(w, http.StatusInternalServerError, map[string]string{
-				"error":      http.StatusText(http.StatusInternalServerError),
-				"request_id": rid.String(),
-			})
+			errorMsg = http.StatusText(http.StatusInternalServerError)
 		}
+
+		rid, _ := hlog.IDFromRequest(r)
+		WriteJSON(w, http.StatusInternalServerError, map[string]string{
+			"error":      errorMsg,
+			"request_id": rid.String(),
+		})
 	}
 
 	log.Str("method", r.Method).
