@@ -60,16 +60,14 @@ func HandleRouteError(w http.ResponseWriter, r *http.Request, err error) {
 		log = hlog.FromRequest(r).Error().Err(err)
 
 		cause := errors.Cause(err)
-		var errorMsg string
+		statusCode := http.StatusInternalServerError
 		if aerr, ok := cause.(httpError); ok {
-			errorMsg = http.StatusText(aerr.StatusCode())
-		} else {
-			errorMsg = http.StatusText(http.StatusInternalServerError)
+			statusCode = aerr.StatusCode()
 		}
 
 		rid, _ := hlog.IDFromRequest(r)
-		WriteJSON(w, http.StatusInternalServerError, map[string]string{
-			"error":      errorMsg,
+		WriteJSON(w, statusCode, map[string]string{
+			"error":      http.StatusText(statusCode),
 			"request_id": rid.String(),
 		})
 	}
