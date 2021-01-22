@@ -25,10 +25,10 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/rcrowley/go-metrics"
 	"github.com/rs/zerolog"
-	"goji.io"
 )
 
 // Server is the base server type. It is usually embedded in an
@@ -37,7 +37,7 @@ type Server struct {
 	config     HTTPConfig
 	middleware []func(http.Handler) http.Handler
 	logger     zerolog.Logger
-	mux        *goji.Mux
+	mux        *mux.Router
 	server     *http.Server
 
 	registry metrics.Registry
@@ -57,7 +57,7 @@ func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 		config:     c,
 		middleware: nil,
 		logger:     logger,
-		mux:        goji.NewMux(),
+		mux:        mux.NewRouter(),
 		registry:   metrics.DefaultRegistry,
 	}
 
@@ -102,7 +102,7 @@ func (s *Server) HTTPServer() *http.Server {
 }
 
 // Mux returns the root mux for the server.
-func (s *Server) Mux() *goji.Mux {
+func (s *Server) Mux() *mux.Router {
 	return s.mux
 }
 
