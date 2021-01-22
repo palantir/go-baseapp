@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/DataDog/datadog-go v0.0.0-20180330214955-e67964b4021a
 	github.com/bluekeyes/hatpear v0.1.1
-	github.com/crewjam/saml v0.4.4
+	github.com/crewjam/saml v0.4.5
 	github.com/gorilla/sessions v1.2.1
 	github.com/pkg/errors v0.8.1
 	github.com/rcrowley/go-metrics v0.0.0-20180503174638-e2704e165165
