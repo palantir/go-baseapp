@@ -49,9 +49,9 @@ const (
 )
 
 type Config struct {
-	Address  string        `yaml:"address" json:"address"`
-	Interval time.Duration `yaml:"interval" json:"interval"`
-	Tags     []string      `yaml:"tags" json:"tags"`
+	Address  string        `yaml:"address" json:"address" hcl:"address"`
+	Interval time.Duration `yaml:"interval" json:"interval" hcl:"interval"`
+	Tags     []string      `yaml:"tags" json:"tags" hcl:"tags,optional"`
 }
 
 // StartEmitter starts a goroutine that emits metrics from the server's
