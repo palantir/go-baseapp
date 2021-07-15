@@ -212,3 +212,10 @@ func WithEncryptedAssertions(encrypt bool) Param {
 		return nil
 	}
 }
+
+func WithForceAuthn(force bool) Param {
+	return func(sp *ServiceProvider) error {
+		sp.sp.ForceAuthn = &force
+		return nil
+	}
+}
