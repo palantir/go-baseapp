@@ -20,7 +20,6 @@ import (
 	"github.com/palantir/go-baseapp/baseapp"
 	"github.com/palantir/go-baseapp/baseapp/datadog"
 	"github.com/rs/zerolog"
-	"goji.io/pat"
 )
 
 type MessageHandler struct {
@@ -61,7 +60,7 @@ func main() {
 
 	// Register your routes with the server
 	messageHandler := &MessageHandler{Message: config.App.Message}
-	server.Mux().Handle(pat.Get("/api/message"), messageHandler)
+	server.Mux().Handle("/api/message", messageHandler).Methods("GET")
 
 	// Start a goroutine to emit server metrics to Datadog
 	if err := datadog.StartEmitter(server, config.Datadog); err != nil {
