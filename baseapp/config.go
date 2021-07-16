@@ -21,19 +21,19 @@ import (
 )
 
 type TLSConfig struct {
-	CertFile string `yaml:"cert_file" json:"certFile"`
-	KeyFile  string `yaml:"key_file" json:"keyFile"`
+	CertFile string `yaml:"cert_file" json:"certFile" hcl:"cert_file"`
+	KeyFile  string `yaml:"key_file" json:"keyFile" hcl:"key_file"`
 }
 
 // HTTPConfig contains options for HTTP servers. It is usually embedded in a
 // larger configuration struct.
 type HTTPConfig struct {
-	Address   string     `yaml:"address" json:"address"`
-	Port      int        `yaml:"port" json:"port"`
-	PublicURL string     `yaml:"public_url" json:"publicUrl"`
-	TLSConfig *TLSConfig `yaml:"tls_config" json:"tlsConfig"`
+	Address   string     `yaml:"address" json:"address" hcl:"address"`
+	Port      int        `yaml:"port" json:"port" hcl:"port"`
+	PublicURL string     `yaml:"public_url" json:"publicUrl" hcl:"public_url,optional"`
+	TLSConfig *TLSConfig `yaml:"tls_config" json:"tlsConfig" hcl:"tls_config,block"`
 
-	ShutdownWaitTime *time.Duration `yaml:"shutdown_wait_time" json:"shutdownWaitTime"`
+	ShutdownWaitTime *time.Duration `yaml:"shutdown_wait_time" json:"shutdownWaitTime" hcl:"shutdown_wait_time"`
 }
 
 // SetValuesFromEnv sets values in the configuration from corresponding
@@ -63,10 +63,10 @@ func (c *HTTPConfig) SetValuesFromEnv(prefix string) {
 // LoggingConfig contains options for logging, such as log level and textual representation.
 // It is usually embedded in a larger configuration struct.
 type LoggingConfig struct {
-	Level string `yaml:"level" json:"level"`
+	Level string `yaml:"level" json:"level" hcl:"level"`
 
 	// Pretty will make the output human-readable
-	Pretty bool `yaml:"pretty" json:"pretty"`
+	Pretty bool `yaml:"pretty" json:"pretty" hcl:"pretty"`
 }
 
 // SetValuesFromEnv sets values in the configuration from corresponding
