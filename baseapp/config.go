@@ -21,8 +21,9 @@ import (
 )
 
 type TLSConfig struct {
-	CertFile string `yaml:"cert_file" json:"certFile"`
-	KeyFile  string `yaml:"key_file" json:"keyFile"`
+	CertFile            string `yaml:"cert_file" json:"certFile"`
+	KeyFile             string `yaml:"key_file" json:"keyFile"`
+	DisableMinVersion12 bool   `yaml:"disable_min_version_12" json:"disableMinVersion12"`
 }
 
 // HTTPConfig contains options for HTTP servers. It is usually embedded in a
