@@ -16,7 +16,6 @@ package baseapp
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -117,17 +116,6 @@ func (s *Server) Registry() metrics.Registry {
 	return s.registry
 }
 
-var defaultCipherSuites = []uint16{
-	// This cipher suite is included to enable http/2. For details, see
-	// https://blog.bracebin.com/achieving-perfect-ssl-labs-score-with-go
-	tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-
-	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-	tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-	tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-	tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-}
-
 // Start starts the server and blocks.
 func (s *Server) start() error {
 	s.init.Do(func() {
@@ -141,13 +129,6 @@ func (s *Server) start() error {
 
 	tlsConfig := s.config.TLSConfig
 	if tlsConfig != nil {
-		if !tlsConfig.DisableMinVersion12 {
-			s.server.TLSConfig = &tls.Config{
-				MinVersion:               tls.VersionTLS12,
-				PreferServerCipherSuites: true,
-				CipherSuites:             defaultCipherSuites,
-			}
-		}
 		return s.server.ListenAndServeTLS(tlsConfig.CertFile, tlsConfig.KeyFile)
 	}
 
