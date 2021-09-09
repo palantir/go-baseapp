@@ -16,6 +16,7 @@ package baseapp
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -76,7 +77,11 @@ func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 	}
 
 	if base.server == nil {
-		base.server = &http.Server{}
+		base.server = &http.Server{
+			TLSConfig: &tls.Config{
+				MinVersion: tls.VersionTLS12,
+			},
+		}
 	}
 
 	if base.server.Addr == "" {
