@@ -15,7 +15,6 @@
 package baseapp
 
 import (
-	"crypto/tls"
 	"net/http"
 	"time"
 
@@ -48,7 +47,6 @@ func DefaultParams(logger zerolog.Logger, metricsPrefix string) []Param {
 		WithUTCNanoTime(),
 		WithErrorLogging(RichErrorMarshalFunc),
 		WithMetrics(),
-		WithTLSConfig(&tls.Config{MinVersion: tls.VersionTLS12}),
 	}
 }
 
@@ -107,13 +105,6 @@ func WithMetrics() Param {
 func WithHTTPServer(server *http.Server) Param {
 	return func(s *Server) error {
 		s.server = server
-		return nil
-	}
-}
-
-func WithTLSConfig(tlsConfig *tls.Config) Param {
-	return func(s *Server) error {
-		s.server.TLSConfig = tlsConfig
 		return nil
 	}
 }
