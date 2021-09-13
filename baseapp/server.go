@@ -79,7 +79,8 @@ func NewServer(c HTTPConfig, params ...Param) (*Server, error) {
 	if base.server == nil {
 		base.server = &http.Server{
 			TLSConfig: &tls.Config{
-				MinVersion: tls.VersionTLS12,
+				MinVersion:               tls.VersionTLS12,
+				PreferServerCipherSuites: true,
 				CipherSuites: []uint16{
 					// http/2 support
 					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
