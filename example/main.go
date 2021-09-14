@@ -69,5 +69,7 @@ func main() {
 	}
 
 	// Start the server (blocking)
-	_ = server.Start()
+	if err = server.Start(); err != nil {
+		logger.Error().Err(err).Msg("server failed")
+	}
 }
