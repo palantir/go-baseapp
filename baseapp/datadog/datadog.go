@@ -64,11 +64,10 @@ func StartEmitter(s *baseapp.Server, c Config) error {
 		c.Interval = DefaultInterval
 	}
 
-	client, err := statsd.New(c.Address)
+	client, err := statsd.New(c.Address, statsd.WithTags(c.Tags))
 	if err != nil {
 		return errors.Wrap(err, "datadog: failed to create client")
 	}
-	client.Tags = append(client.Tags, c.Tags...)
 
 	emitter := NewEmitter(client, s.Registry())
 	go emitter.Emit(context.Background(), c.Interval)

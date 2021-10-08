@@ -15,6 +15,9 @@
 package datadog
 
 import (
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/require"
+	"strings"
 	"testing"
 	"time"
 
@@ -50,26 +53,32 @@ func TestTagsFromName(t *testing.T) {
 }
 
 func TestEmitCounts(t *testing.T) {
-	initialize := func() (*Emitter, *MemoryWriter, metrics.Registry) {
+	initialize := func() (*Emitter, *MemoryWriter, *statsd.Client, metrics.Registry) {
 		w := &MemoryWriter{}
-		c, _ := statsd.NewWithWriter(w)
+		c, err := statsd.NewWithWriter(w)
+		require.NoError(t, err)
+
 		r := metrics.NewRegistry()
-		return NewEmitter(c, r), w, r
+		return NewEmitter(c, r), w, c, r
 	}
 
 	t.Run("single", func(t *testing.T) {
-		e, w, r := initialize()
+		e, w, client, r := initialize()
 		c := metrics.NewRegisteredCounter("counter", r)
 
 		c.Inc(1)
 		e.EmitOnce()
+
+		// Close the client to ensure flushing of results. Required for testing.
+		// See official tests https://github.com/DataDog/datadog-go/blob/ebec44a4d1f34e521da53ddb5fd8190aa379fd99/statsd/statsd_test.go#L87
+		require.NoError(t, client.Close())
 
 		assert.Equal(t, int64(1), c.Count())
 		assert.Equal(t, []string{"counter:1|c"}, w.Messages)
 	})
 
 	t.Run("difference", func(t *testing.T) {
-		e, w, r := initialize()
+		e, w, client, r := initialize()
 		c := metrics.NewRegisteredCounter("counter", r)
 
 		c.Inc(1)
@@ -77,8 +86,13 @@ func TestEmitCounts(t *testing.T) {
 		c.Inc(2)
 		e.EmitOnce()
 
+		// Close the client to ensure flushing of results. Required for testing.
+		// See official tests https://github.com/DataDog/datadog-go/blob/ebec44a4d1f34e521da53ddb5fd8190aa379fd99/statsd/statsd_test.go#L87
+		require.NoError(t, client.Close())
+
 		assert.Equal(t, int64(3), c.Count())
 		assert.Equal(t, []string{"counter:1|c", "counter:2|c"}, w.Messages)
+
 	})
 }
 
@@ -87,7 +101,12 @@ type MemoryWriter struct {
 }
 
 func (mw *MemoryWriter) Write(b []byte) (int, error) {
-	mw.Messages = append(mw.Messages, string(b))
+	spew.Dump(b)
+	for _, m := range strings.Split(string(b), "\n") {
+		if m != "" {
+			mw.Messages = append(mw.Messages, m)
+		}
+	}
 	return len(b), nil
 }
 
