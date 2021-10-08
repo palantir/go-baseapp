@@ -15,8 +15,6 @@
 package datadog
 
 import (
-	"github.com/davecgh/go-spew/spew"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 	"time"
@@ -24,6 +22,7 @@ import (
 	"github.com/DataDog/datadog-go/statsd"
 	"github.com/rcrowley/go-metrics"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTagsFromName(t *testing.T) {
@@ -101,7 +100,6 @@ type MemoryWriter struct {
 }
 
 func (mw *MemoryWriter) Write(b []byte) (int, error) {
-	spew.Dump(b)
 	for _, m := range strings.Split(string(b), "\n") {
 		if m != "" {
 			mw.Messages = append(mw.Messages, m)
