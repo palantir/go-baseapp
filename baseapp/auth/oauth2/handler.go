@@ -23,9 +23,10 @@ import (
 )
 
 const (
-	queryCode  = "code"
-	queryError = "error"
-	queryState = "state"
+	queryCode         = "code"
+	queryError        = "error"
+	queryState        = "state"
+	querySessionState = "session_state"
 )
 
 var (
@@ -190,6 +191,7 @@ func redirectURL(r *http.Request, forceTLS bool) string {
 	q := u.Query()
 	q.Del(queryCode)
 	q.Del(queryState)
+	q.Del(querySessionState)
 	u.RawQuery = q.Encode()
 
 	return u.String()
