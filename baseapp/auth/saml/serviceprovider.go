@@ -152,7 +152,7 @@ func (s *ServiceProvider) getSAMLSettingsForRequest(r *http.Request) *saml.Servi
 func (s *ServiceProvider) DoAuth(w http.ResponseWriter, r *http.Request) {
 	sp := s.getSAMLSettingsForRequest(r)
 
-	request, err := sp.MakeAuthenticationRequest(sp.GetSSOBindingLocation(saml.HTTPRedirectBinding))
+	request, err := sp.MakeAuthenticationRequest(sp.GetSSOBindingLocation(saml.HTTPRedirectBinding), saml.HTTPRedirectBinding, saml.HTTPPostBinding)
 	if err != nil {
 		s.onError(w, r, newError(errors.Wrap(err, "failed to create authentication request"), http.StatusInternalServerError))
 		return
@@ -163,7 +163,11 @@ func (s *ServiceProvider) DoAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	target := request.Redirect("")
+	target, err := request.Redirect("", sp)
+	if err != nil {
+		s.onError(w, r, newError(errors.Wrap(err, "failed to generate redirect URL"), http.StatusInternalServerError))
+		return
+	}
 
 	http.Redirect(w, r, target.String(), http.StatusFound)
 }
