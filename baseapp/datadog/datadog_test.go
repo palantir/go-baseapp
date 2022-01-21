@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DataDog/datadog-go/statsd"
+	"github.com/DataDog/datadog-go/v5/statsd"
 	"github.com/rcrowley/go-metrics"
 	"github.com/stretchr/testify/assert"
 )
@@ -63,9 +63,10 @@ func TestEmitCounts(t *testing.T) {
 
 		c.Inc(1)
 		e.EmitOnce()
+		assert.NoError(t, e.Flush(), "emitter flush should complete")
 
 		assert.Equal(t, int64(1), c.Count())
-		assert.Equal(t, []string{"counter:1|c"}, w.Messages)
+		assert.Equal(t, []string{"counter:1|c\n"}, w.Messages)
 	})
 
 	t.Run("difference", func(t *testing.T) {
@@ -74,11 +75,13 @@ func TestEmitCounts(t *testing.T) {
 
 		c.Inc(1)
 		e.EmitOnce()
+		assert.NoError(t, e.Flush(), "emitter flush should complete")
 		c.Inc(2)
 		e.EmitOnce()
+		assert.NoError(t, e.Flush(), "emitter flush should complete")
 
 		assert.Equal(t, int64(3), c.Count())
-		assert.Equal(t, []string{"counter:1|c", "counter:2|c"}, w.Messages)
+		assert.Equal(t, []string{"counter:1|c\n", "counter:2|c\n"}, w.Messages)
 	})
 }
 
