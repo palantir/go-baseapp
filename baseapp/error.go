@@ -76,3 +76,11 @@ func HandleRouteError(w http.ResponseWriter, r *http.Request, err error) {
 		Str("path", r.URL.String()).
 		Msg("Unhandled error while serving route")
 }
+
+type OTelErrorHandler struct {
+	logger zerolog.Logger
+}
+
+func (f OTelErrorHandler) Handle(err error) {
+	f.logger.Error().Err(err).Msg("unhandled OpenTelemetry error")
+}
