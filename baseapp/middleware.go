@@ -22,6 +22,13 @@ import (
 	"github.com/rcrowley/go-metrics"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/filters"
+	"go.opentelemetry.io/contrib/propagators/aws/xray"
+	"go.opentelemetry.io/contrib/propagators/b3"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // DefaultMiddleware returns the default middleware stack. The stack:
@@ -29,6 +36,7 @@ import (
 //  - Adds a logger to request contexts
 //  - Adds a metrics registry to request contexts
 //  - Adds a request ID to all requests and responses
+//  - Extracts Telemetry headers from requests
 //  - Logs and records metrics for all requests
 //  - Handles errors returned by route handlers
 //  - Recovers from panics in route handlers
@@ -40,6 +48,8 @@ func DefaultMiddleware(logger zerolog.Logger, registry metrics.Registry) []func(
 		hlog.NewHandler(logger),
 		NewMetricsHandler(registry),
 		hlog.RequestIDHandler("rid", "X-Request-ID"),
+		NewTelemetryHandler(DefaultTelemetryHandlerOptions...),
+		NewTraceIDHandler("trace_id"),
 		AccessHandler(RecordRequest),
 		hatpear.Catch(HandleRouteError),
 		hatpear.Recover(),
@@ -89,4 +99,96 @@ func AccessHandler(f AccessCallback) func(next http.Handler) http.Handler {
 			f(r, wrapped.Status(), wrapped.BytesWritten(), time.Since(start))
 		})
 	}
+}
+
+// NewTelemetryHandler returns middleware that adds an OpenTelemetry span to the request if a tracing provider is set.
+func NewTelemetryHandler(options ...otelhttp.Option) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requestID := ""
+			if xid, ok := hlog.IDFromRequest(r); ok {
+				requestID = xid.String()
+			}
+
+			allOptions := []otelhttp.Option{
+				otelhttp.WithSpanOptions(
+					trace.WithAttributes(
+						attribute.String("request.id", requestID))),
+			}
+			allOptions = append(allOptions, options...)
+
+			h := otelhttp.NewHandler(next, r.Host, allOptions...)
+			h.ServeHTTP(w, r)
+		})
+	}
+}
+
+// NewTraceIDHandler returns middleware that adds the OpenTelemetry trace ID to the request logger.
+func NewTraceIDHandler(fieldKey string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if fieldKey == "" {
+				// If there's no field key, don't log. This is the same behaviour as the zerolog request ID handler
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// Ensure the Trace ID is in all logs
+			ctx := r.Context()
+			log := zerolog.Ctx(ctx)
+			span := trace.SpanFromContext(ctx)
+			log.UpdateContext(func(c zerolog.Context) zerolog.Context {
+				if span.SpanContext().TraceID().IsValid() {
+					return c.Str(fieldKey, span.SpanContext().TraceID().String())
+				}
+
+				return c
+			})
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// DefaultOTelFilters is a set of common things that are evaluated to decide if a request should be excluded
+// from OpenTelemetry tracing, for example a path starting with /ping.
+var DefaultOTelFilters = filters.None(
+	filters.PathPrefix("/ping"),
+	filters.PathPrefix("/api/ping"),
+	filters.PathPrefix("/health"),
+	filters.PathPrefix("/api/health"),
+	filters.PathPrefix("/debug"),
+	filters.PathPrefix("/api/debug"),
+	filters.PathPrefix("/pprof"),
+	filters.PathPrefix("/api/pprof"),
+)
+
+// WithDefaultFilter wraps DefaultOTelFilters into an otelhttp.Option.
+func WithDefaultFilter() otelhttp.Option {
+	return otelhttp.WithFilter(DefaultOTelFilters)
+}
+
+// WithDefaultOTelPropagators sets a standard collection of propagators, in a specific order, that covers most of the types
+// of headers that could include a trace ID.
+//
+// Ordering here is important as it's a "last one wins" scenario. Baggage will always be decoded from the headers as
+// this is separate standard. Then, in the following order the trace ID will be created from the headers:
+// 1. X-Amzn-Trace-Id header
+// 2. W3C Trace Context headers
+// 3. B3/Zipkin headers
+func WithDefaultOTelPropagators() otelhttp.Option {
+	return otelhttp.WithPropagators(
+		propagation.NewCompositeTextMapPropagator(
+			propagation.Baggage{},
+			xray.Propagator{},
+			propagation.TraceContext{},
+			b3.New(),
+		))
+}
+
+// DefaultTelemetryHandlerOptions is a slice of standard otelhttp.Option to use when handling requests.
+var DefaultTelemetryHandlerOptions = []otelhttp.Option{
+	otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
+	WithDefaultFilter(),
+	WithDefaultOTelPropagators(),
 }
