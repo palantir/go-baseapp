@@ -68,10 +68,8 @@ func fmtStack(tracer interface{}) string {
 		return fmt.Sprintf("%+v", t.StackTrace())
 	case runtimeStackTracer:
 		var s strings.Builder
-		for i, frame := range t.StackTrace() {
-			if i > 0 {
-				s.WriteByte('\n')
-			}
+		for _, frame := range t.StackTrace() {
+			s.WriteByte('\n')
 			_, _ = fmt.Fprintf(&s, "%s\n\t", frame.Function)
 			_, _ = fmt.Fprintf(&s, "%s:%d", frame.File, frame.Line)
 		}
