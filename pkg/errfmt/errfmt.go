@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package errfmt implements formatting for error types. Specifcally, it prints
+// Package errfmt implements formatting for error types. Specifically, it prints
 // error messages with the deepest available stacktrace for errors that include
 // stacktraces.
 package errfmt
