@@ -25,7 +25,7 @@ Create a `baseapp.Server` object, register your handlers, and start the server:
 func main() {
     config := baseapp.HTTPConfig{
         Address: "127.0.0.1",
-        Port:    "8000",
+        Port:    8000,
     }
     loggingConfig := baseapp.LoggingConfig{
         Pretty: true,
