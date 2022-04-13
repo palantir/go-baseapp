@@ -1,6 +1,6 @@
 module github.com/palantir/go-baseapp
 
-go 1.17
+go 1.18
 
 require (
 	github.com/DataDog/datadog-go/v5 v5.0.2
