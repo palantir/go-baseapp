@@ -219,3 +219,12 @@ func WithForceAuthn(force bool) Param {
 		return nil
 	}
 }
+
+// WithEntityID is optional. When set it will define the EntityID within the EntityDescriptor.
+// If left unset it will default to your metadata url.
+func WithEntityID(value string) Param {
+	return func(sp *ServiceProvider) error {
+		sp.sp.EntityID = value
+		return nil
+	}
+}
