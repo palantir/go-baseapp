@@ -14,12 +14,12 @@ type SimpleMetrics struct {
 }
 
 type FunctionalMetrics struct {
-	ActiveWorkers metrics.Gauge `metric:"active_workers" metric-func:"GetWorkers"`
+	ActiveWorkers *metrics.FunctionalGauge `metric:"active_workers"`
 
 	workers int64
 }
 
-func (m *FunctionalMetrics) GetWorkers() int64 {
+func (m *FunctionalMetrics) ComputeActiveWorkers() int64 {
 	m.workers++
 	return m.workers
 }
