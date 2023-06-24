@@ -1,3 +1,17 @@
+// Copyright 2023 Palantir Technologies, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package appmetrics
 
 import (
@@ -8,6 +22,8 @@ import (
 
 	"github.com/rcrowley/go-metrics"
 )
+
+// TODO(bkeyes): package and function docs
 
 const (
 	MetricTag       = "metric"
@@ -32,6 +48,13 @@ var (
 	histogramType              = reflect.TypeOf((*metrics.Histogram)(nil)).Elem()
 	meterType                  = reflect.TypeOf((*metrics.Meter)(nil)).Elem()
 	timerType                  = reflect.TypeOf((*metrics.Timer)(nil)).Elem()
+
+	taggedCounterType      = reflect.TypeOf((*TaggedCounter)(nil)).Elem()
+	taggedGaugeType        = reflect.TypeOf((*TaggedGauge)(nil)).Elem()
+	taggedGaugeFloat64Type = reflect.TypeOf((*TaggedGaugeFloat64)(nil)).Elem()
+	taggedHistogramType    = reflect.TypeOf((*TaggedHistogram)(nil)).Elem()
+	taggedMeterType        = reflect.TypeOf((*TaggedMeter)(nil)).Elem()
+	taggedTimerType        = reflect.TypeOf((*TaggedTimer)(nil)).Elem()
 )
 
 func New[M any]() *M {
@@ -75,7 +98,13 @@ func Register[M any](r metrics.Registry, m *M) {
 
 	for _, f := range fields {
 		name := f.Tag.Get(MetricTag)
-		_ = r.Register(name, v.FieldByIndex(f.Index).Interface())
+		metric := v.FieldByIndex(f.Index).Interface()
+
+		if m, ok := metric.(interface{ register(metrics.Registry) }); ok {
+			m.register(r)
+		} else {
+			_ = r.Register(name, metric)
+		}
 	}
 }
 
@@ -140,15 +169,22 @@ func isMetricType(typ reflect.Type) bool {
 	switch typ {
 	case counterType, gaugeType, functionalGaugeType, gaugeFloat64Type, functionalGaugeFloat64Type, histogramType, meterType, timerType:
 		return true
+	case taggedCounterType, taggedGaugeType, taggedGaugeFloat64Type, taggedHistogramType, taggedMeterType, taggedTimerType:
+		return true
 	}
 	return false
 }
 
-func createField(v reflect.Value, f reflect.StructField, metric string) error {
+func createField(v reflect.Value, f reflect.StructField, metricName string) error {
 	var value any
 	switch f.Type {
-	case counterType:
-		value = metrics.NewCounter()
+	case counterType, taggedCounterType:
+		newMetric := metrics.NewCounter
+		if f.Type == taggedCounterType {
+			value = &taggedMetric[metrics.Counter]{name: metricName, newMetric: newMetric}
+		} else {
+			value = newMetric()
+		}
 
 	case functionalGaugeType:
 		fn, err := getGaugeFunction[int64](v, f.Name)
@@ -157,8 +193,13 @@ func createField(v reflect.Value, f reflect.StructField, metric string) error {
 		}
 		value = metrics.NewFunctionalGauge(fn)
 
-	case gaugeType:
-		value = metrics.NewGauge()
+	case gaugeType, taggedGaugeType:
+		newMetric := metrics.NewGauge
+		if f.Type == taggedGaugeType {
+			value = &taggedMetric[metrics.Gauge]{name: metricName, newMetric: newMetric}
+		} else {
+			value = newMetric()
+		}
 
 	case functionalGaugeFloat64Type:
 		fn, err := getGaugeFunction[float64](v, f.Name)
@@ -167,32 +208,58 @@ func createField(v reflect.Value, f reflect.StructField, metric string) error {
 		}
 		value = metrics.NewFunctionalGaugeFloat64(fn)
 
-	case gaugeFloat64Type:
-		value = metrics.NewGaugeFloat64()
-
-	case histogramType:
-		if sample := f.Tag.Get(MetricSampleTag); sample != "" {
-			s, err := parseSample(sample)
-			if err != nil {
-				return err
-			}
-			value = metrics.NewHistogram(s)
+	case gaugeFloat64Type, taggedGaugeFloat64Type:
+		newMetric := metrics.NewGaugeFloat64
+		if f.Type == taggedGaugeFloat64Type {
+			value = &taggedMetric[metrics.GaugeFloat64]{name: metricName, newMetric: newMetric}
 		} else {
-			value = metrics.NewHistogram(metrics.NewExpDecaySample(DefaultReservoirSize, DefaultExpDecayAlpha))
+			value = newMetric()
 		}
 
-	case meterType:
-		value = metrics.NewMeter()
-
-	case timerType:
+	case histogramType, taggedHistogramType:
+		newMetric := func() metrics.Histogram {
+			return metrics.NewHistogram(
+				metrics.NewExpDecaySample(DefaultReservoirSize, DefaultExpDecayAlpha),
+			)
+		}
 		if sample := f.Tag.Get(MetricSampleTag); sample != "" {
 			s, err := parseSample(sample)
 			if err != nil {
 				return err
 			}
-			value = metrics.NewCustomTimer(metrics.NewHistogram(s), metrics.NewMeter())
+			newMetric = func() metrics.Histogram {
+				return metrics.NewHistogram(s())
+			}
+		}
+		if f.Type == taggedHistogramType {
+			value = &taggedMetric[metrics.Histogram]{name: metricName, newMetric: newMetric}
 		} else {
-			value = metrics.NewTimer()
+			value = newMetric()
+		}
+
+	case meterType, taggedMeterType:
+		newMetric := metrics.NewMeter
+		if f.Type == taggedMeterType {
+			value = &taggedMetric[metrics.Meter]{name: metricName, newMetric: newMetric}
+		} else {
+			value = newMetric()
+		}
+
+	case timerType, taggedTimerType:
+		newMetric := metrics.NewTimer
+		if sample := f.Tag.Get(MetricSampleTag); sample != "" {
+			s, err := parseSample(sample)
+			if err != nil {
+				return err
+			}
+			newMetric = func() metrics.Timer {
+				return metrics.NewCustomTimer(metrics.NewHistogram(s()), metrics.NewMeter())
+			}
+		}
+		if f.Type == taggedTimerType {
+			value = &taggedMetric[metrics.Timer]{name: metricName, newMetric: newMetric}
+		} else {
+			value = newMetric()
 		}
 	}
 
@@ -227,7 +294,7 @@ func getGaugeFunction[N int64 | float64, F func() N](v reflect.Value, fieldName 
 	return m.Interface().(F), nil
 }
 
-func parseSample(s string) (metrics.Sample, error) {
+func parseSample(s string) (func() metrics.Sample, error) {
 	parts := strings.Split(strings.ToLower(s), ",")
 	switch parts[0] {
 	case "uniform":
@@ -237,27 +304,36 @@ func parseSample(s string) (metrics.Sample, error) {
 	default:
 		return nil, fmt.Errorf("invalid sample type")
 	}
-	return metrics.NilSample{}, nil
 }
 
-func parseUniformSample(parts []string) (metrics.Sample, error) {
+func parseUniformSample(parts []string) (func() metrics.Sample, error) {
+	var fn func() metrics.Sample
 	switch len(parts) {
 	case 1:
-		return metrics.NewUniformSample(DefaultReservoirSize), nil
+		fn = func() metrics.Sample {
+			return metrics.NewUniformSample(DefaultReservoirSize)
+		}
 	case 2:
 		rs, err := strconv.Atoi(parts[1])
 		if err != nil {
 			return nil, fmt.Errorf("invalid uniform sample: reservoir: %w", err)
 		}
-		return metrics.NewUniformSample(rs), nil
+		fn = func() metrics.Sample {
+			return metrics.NewUniformSample(rs)
+		}
+	default:
+		return nil, fmt.Errorf("invalid uniform sample")
 	}
-	return nil, fmt.Errorf("invalid uniform sample")
+	return fn, nil
 }
 
-func parseExpDecaySample(parts []string) (metrics.Sample, error) {
+func parseExpDecaySample(parts []string) (func() metrics.Sample, error) {
+	var fn func() metrics.Sample
 	switch len(parts) {
 	case 1:
-		return metrics.NewExpDecaySample(DefaultReservoirSize, DefaultExpDecayAlpha), nil
+		fn = func() metrics.Sample {
+			return metrics.NewExpDecaySample(DefaultReservoirSize, DefaultExpDecayAlpha)
+		}
 	case 3:
 		rs, err := strconv.Atoi(parts[1])
 		if err != nil {
@@ -267,7 +343,11 @@ func parseExpDecaySample(parts []string) (metrics.Sample, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid expdecay sample: alpha: %w", err)
 		}
-		return metrics.NewExpDecaySample(rs, alpha), nil
+		fn = func() metrics.Sample {
+			return metrics.NewExpDecaySample(rs, alpha)
+		}
+	default:
+		return nil, fmt.Errorf("invalid expdecay sample")
 	}
-	return nil, fmt.Errorf("invalid expdecay sample")
+	return fn, nil
 }
