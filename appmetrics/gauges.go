@@ -45,6 +45,7 @@ type FunctionalGaugeFloat64 interface {
 
 func getGaugeFunction[N int64 | float64, F func() N](v reflect.Value, fieldName string) (F, error) {
 	name := GaugeFunctionPrefix + fieldName
+	isField := false
 
 	m := v.Addr().MethodByName(name)
 	if !m.IsValid() {
@@ -56,6 +57,7 @@ func getGaugeFunction[N int64 | float64, F func() N](v reflect.Value, fieldName 
 		if m.Type().Kind() != reflect.Func {
 			return nil, fmt.Errorf("%s: field must be a function", name)
 		}
+		isField = true
 	}
 
 	if m.Type().NumIn() != 0 {
@@ -66,6 +68,13 @@ func getGaugeFunction[N int64 | float64, F func() N](v reflect.Value, fieldName 
 	}
 	if m.Type().Out(0) != reflect.TypeOf(N(0)) {
 		return nil, fmt.Errorf("%s: function must return a value of type %T", name, N(0))
+	}
+
+	if isField {
+		// If the function is a field, return a wrapper that calls the current
+		// field value at the time of the the call. This is because the field
+		// value is nil when we discover the function as part of New()
+		return func() N { return m.Call(nil)[0].Interface().(N) }, nil
 	}
 	return m.Interface().(F), nil
 }

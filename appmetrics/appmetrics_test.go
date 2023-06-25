@@ -28,7 +28,10 @@ type SimpleMetrics struct {
 }
 
 type FunctionalMetrics struct {
-	ActiveWorkers FunctionalGauge `metric:"active_workers"`
+	ActiveWorkers FunctionalGauge        `metric:"active_workers"`
+	Temperature   FunctionalGaugeFloat64 `metric:"temperature"`
+
+	ComputeTemperature func() float64
 
 	workers int64
 }
@@ -58,8 +61,13 @@ func TestNew(t *testing.T) {
 
 	t.Run("functional", func(t *testing.T) {
 		m := New[FunctionalMetrics]()
+		m.ComputeTemperature = func() float64 {
+			return 20
+		}
+
 		assert.Equal(t, int64(1), m.ActiveWorkers.Value())
 		assert.Equal(t, int64(2), m.ActiveWorkers.Value())
+		assert.Equal(t, float64(20), m.Temperature.Value())
 	})
 
 	t.Run("sample", func(t *testing.T) {
