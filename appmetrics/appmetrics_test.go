@@ -44,8 +44,8 @@ type SampleMetrics struct {
 }
 
 type TaggedMetrics struct {
-	Responses TaggedCounter `metric:"responses"`
-	QueueSize TaggedGauge   `metric:"queue_size"`
+	Responses Tagged[metrics.Counter] `metric:"responses"`
+	QueueSize Tagged[metrics.Gauge]   `metric:"queue_size"`
 }
 
 func TestNew(t *testing.T) {

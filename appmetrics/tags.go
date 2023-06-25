@@ -15,57 +15,24 @@
 package appmetrics
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/rcrowley/go-metrics"
 )
 
-// TaggedCounter is a metrics.Counter with dynamic tags.
-//
-// Tag returns an instance of a counter that reports with the given tags. Tags
-// may be either plain values or keys and values separated by a colon.
-type TaggedCounter interface {
-	Tag(tags ...string) metrics.Counter
-}
+var (
+	strSliceType = reflect.TypeOf([]string(nil))
+)
 
-// TaggedGauge is a metrics.Gauge with dynamic tags.
+// Tagged is a metric with dynamic tags. The type M must be one of the
+// supported metric types exported by rcrowley/go-metrics.
 //
-// Tag returns an instance of a gauge that reports with the given tags. Tags
-// may be either plain values or keys and values separated by a colon.
-type TaggedGauge interface {
-	Tag(tags ...string) metrics.Gauge
-}
-
-// TaggedGaugeFloat64 is a metrics.GaugeFloat64 with dynamic tags.
-//
-// Tag returns an instance of a gauge that reports with the given tags. Tags
-// may be either plain values or keys and values separated by a colon.
-type TaggedGaugeFloat64 interface {
-	Tag(tags ...string) metrics.GaugeFloat64
-}
-
-// TaggedHistogram is a metrics.Histogram with dynamic tags.
-//
-// Tag returns an instance of a histogram that reports with the given tags.
-// Tags may be either plain values or keys and values separated by a colon.
-type TaggedHistogram interface {
-	Tag(tags ...string) metrics.Histogram
-}
-
-// TaggedMeter is a metrics.Meter with dynamic tags.
-//
-// Tag returns an instance of a meter that reports with the given tags. Tags
-// may be either plain values or keys and values separated by a colon.
-type TaggedMeter interface {
-	Tag(tags ...string) metrics.Meter
-}
-
-// TaggedTimer is a metrics.Timer with dynamic tags.
-//
-// Tag returns an instance of a timer that reports with the given tags. Tags
-// may be either plain values or keys and values separated by a colon.
-type TaggedTimer interface {
-	Tag(tags ...string) metrics.Timer
+// The Tag method returns an instance of the metric that reports with the given
+// tags. Tags may be either plain values or key and values separated by a
+// colon.
+type Tagged[M any] interface {
+	Tag(tags ...string) M
 }
 
 type taggedMetric[M any] struct {
@@ -90,4 +57,27 @@ func (m *taggedMetric[M]) register(r metrics.Registry) {
 
 	// Add the bare metric immediately so emitters can find it in the registry
 	r.GetOrRegister(m.name, m.newMetric)
+}
+
+// isTagged determines if typ is a Tagged instantiation and returns the
+// parameter type. As of Go 1.20, the reflect package does not support direct
+// access to type parameters.
+func isTagged(typ reflect.Type) (bool, reflect.Type) {
+	if typ.Kind() != reflect.Interface {
+		return false, nil
+	}
+
+	m, ok := typ.MethodByName("Tag")
+	if !ok {
+		return false, nil
+	}
+
+	mt := m.Type
+	if !mt.IsVariadic() || mt.NumIn() != 1 || mt.In(0) != strSliceType {
+		return false, nil
+	}
+	if mt.NumOut() != 1 {
+		return false, nil
+	}
+	return true, mt.Out(0)
 }

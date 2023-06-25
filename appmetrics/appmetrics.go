@@ -48,13 +48,6 @@ var (
 	histogramType              = reflect.TypeOf((*metrics.Histogram)(nil)).Elem()
 	meterType                  = reflect.TypeOf((*metrics.Meter)(nil)).Elem()
 	timerType                  = reflect.TypeOf((*metrics.Timer)(nil)).Elem()
-
-	taggedCounterType      = reflect.TypeOf((*TaggedCounter)(nil)).Elem()
-	taggedGaugeType        = reflect.TypeOf((*TaggedGauge)(nil)).Elem()
-	taggedGaugeFloat64Type = reflect.TypeOf((*TaggedGaugeFloat64)(nil)).Elem()
-	taggedHistogramType    = reflect.TypeOf((*TaggedHistogram)(nil)).Elem()
-	taggedMeterType        = reflect.TypeOf((*TaggedMeter)(nil)).Elem()
-	taggedTimerType        = reflect.TypeOf((*TaggedTimer)(nil)).Elem()
 )
 
 func New[M any]() *M {
@@ -155,7 +148,7 @@ func getMetricFields(typ reflect.Type) ([]reflect.StructField, error) {
 	var fields []reflect.StructField
 	for _, f := range reflect.VisibleFields(typ) {
 		if metric := f.Tag.Get(MetricTag); metric != "" {
-			if isMetricType(f.Type) {
+			if isMetric(f.Type) {
 				fields = append(fields, f)
 			} else {
 				return nil, fmt.Errorf("field %s: metric tag appears on non-metric type %s", f.Name, f.Type)
@@ -165,27 +158,36 @@ func getMetricFields(typ reflect.Type) ([]reflect.StructField, error) {
 	return fields, nil
 }
 
-func isMetricType(typ reflect.Type) bool {
+func isMetric(typ reflect.Type) bool {
+	if tagged, taggedType := isTagged(typ); tagged {
+		typ = taggedType
+	}
 	switch typ {
 	case counterType, gaugeType, functionalGaugeType, gaugeFloat64Type, functionalGaugeFloat64Type, histogramType, meterType, timerType:
-		return true
-	case taggedCounterType, taggedGaugeType, taggedGaugeFloat64Type, taggedHistogramType, taggedMeterType, taggedTimerType:
 		return true
 	}
 	return false
 }
 
 func createField(v reflect.Value, f reflect.StructField, metricName string) error {
+	metricType := f.Type
+
+	tagged, taggedType := isTagged(metricType)
+	if tagged {
+		metricType = taggedType
+	}
+
 	var value any
-	switch f.Type {
-	case counterType, taggedCounterType:
+	switch metricType {
+	case counterType:
 		newMetric := metrics.NewCounter
-		if f.Type == taggedCounterType {
+		if tagged {
 			value = &taggedMetric[metrics.Counter]{name: metricName, newMetric: newMetric}
 		} else {
 			value = newMetric()
 		}
 
+	// TODO(bkeyes): revert this functional gauge stuff, go back to the 'metric-func' tag, but keep the ability to look at both methods and fields?
 	case functionalGaugeType:
 		fn, err := getGaugeFunction[int64](v, f.Name)
 		if err != nil {
@@ -193,9 +195,9 @@ func createField(v reflect.Value, f reflect.StructField, metricName string) erro
 		}
 		value = metrics.NewFunctionalGauge(fn)
 
-	case gaugeType, taggedGaugeType:
+	case gaugeType:
 		newMetric := metrics.NewGauge
-		if f.Type == taggedGaugeType {
+		if tagged {
 			value = &taggedMetric[metrics.Gauge]{name: metricName, newMetric: newMetric}
 		} else {
 			value = newMetric()
@@ -208,15 +210,15 @@ func createField(v reflect.Value, f reflect.StructField, metricName string) erro
 		}
 		value = metrics.NewFunctionalGaugeFloat64(fn)
 
-	case gaugeFloat64Type, taggedGaugeFloat64Type:
+	case gaugeFloat64Type:
 		newMetric := metrics.NewGaugeFloat64
-		if f.Type == taggedGaugeFloat64Type {
+		if tagged {
 			value = &taggedMetric[metrics.GaugeFloat64]{name: metricName, newMetric: newMetric}
 		} else {
 			value = newMetric()
 		}
 
-	case histogramType, taggedHistogramType:
+	case histogramType:
 		newMetric := func() metrics.Histogram {
 			return metrics.NewHistogram(
 				metrics.NewExpDecaySample(DefaultReservoirSize, DefaultExpDecayAlpha),
@@ -231,21 +233,21 @@ func createField(v reflect.Value, f reflect.StructField, metricName string) erro
 				return metrics.NewHistogram(s())
 			}
 		}
-		if f.Type == taggedHistogramType {
+		if tagged {
 			value = &taggedMetric[metrics.Histogram]{name: metricName, newMetric: newMetric}
 		} else {
 			value = newMetric()
 		}
 
-	case meterType, taggedMeterType:
+	case meterType:
 		newMetric := metrics.NewMeter
-		if f.Type == taggedMeterType {
+		if tagged {
 			value = &taggedMetric[metrics.Meter]{name: metricName, newMetric: newMetric}
 		} else {
 			value = newMetric()
 		}
 
-	case timerType, taggedTimerType:
+	case timerType:
 		newMetric := metrics.NewTimer
 		if sample := f.Tag.Get(MetricSampleTag); sample != "" {
 			s, err := parseSample(sample)
@@ -256,7 +258,7 @@ func createField(v reflect.Value, f reflect.StructField, metricName string) erro
 				return metrics.NewCustomTimer(metrics.NewHistogram(s()), metrics.NewMeter())
 			}
 		}
-		if f.Type == taggedTimerType {
+		if tagged {
 			value = &taggedMetric[metrics.Timer]{name: metricName, newMetric: newMetric}
 		} else {
 			value = newMetric()
