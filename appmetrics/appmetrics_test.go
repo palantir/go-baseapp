@@ -28,7 +28,7 @@ type SimpleMetrics struct {
 }
 
 type FunctionalMetrics struct {
-	ActiveWorkers *metrics.FunctionalGauge `metric:"active_workers"`
+	ActiveWorkers FunctionalGauge `metric:"active_workers"`
 
 	workers int64
 }

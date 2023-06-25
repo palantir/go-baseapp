@@ -31,10 +31,6 @@ const (
 )
 
 const (
-	GaugeFunctionPrefix = "Compute"
-)
-
-const (
 	DefaultReservoirSize = 1028
 	DefaultExpDecayAlpha = 0.015
 )
@@ -42,9 +38,9 @@ const (
 var (
 	counterType                = reflect.TypeOf((*metrics.Counter)(nil)).Elem()
 	gaugeType                  = reflect.TypeOf((*metrics.Gauge)(nil)).Elem()
-	functionalGaugeType        = reflect.TypeOf(&metrics.FunctionalGauge{})
+	functionalGaugeType        = reflect.TypeOf((*FunctionalGauge)(nil)).Elem()
 	gaugeFloat64Type           = reflect.TypeOf((*metrics.GaugeFloat64)(nil)).Elem()
-	functionalGaugeFloat64Type = reflect.TypeOf(&metrics.FunctionalGaugeFloat64{})
+	functionalGaugeFloat64Type = reflect.TypeOf((*FunctionalGaugeFloat64)(nil)).Elem()
 	histogramType              = reflect.TypeOf((*metrics.Histogram)(nil)).Elem()
 	meterType                  = reflect.TypeOf((*metrics.Meter)(nil)).Elem()
 	timerType                  = reflect.TypeOf((*metrics.Timer)(nil)).Elem()
@@ -159,12 +155,18 @@ func getMetricFields(typ reflect.Type) ([]reflect.StructField, error) {
 }
 
 func isMetric(typ reflect.Type) bool {
-	if tagged, taggedType := isTagged(typ); tagged {
+	tagged, taggedType := isTagged(typ)
+	if tagged {
 		typ = taggedType
 	}
 	switch typ {
-	case counterType, gaugeType, functionalGaugeType, gaugeFloat64Type, functionalGaugeFloat64Type, histogramType, meterType, timerType:
+	case counterType, gaugeType, gaugeFloat64Type, histogramType, meterType, timerType:
 		return true
+	case functionalGaugeType, functionalGaugeFloat64Type:
+		// Functional gagues cannot be tagged because there's currently no way
+		// to pass the tags in to the function. Without this, every tag will
+		// report the same value, making the tags redundant.
+		return !tagged
 	}
 	return false
 }
@@ -187,7 +189,6 @@ func createField(v reflect.Value, f reflect.StructField, metricName string) erro
 			value = newMetric()
 		}
 
-	// TODO(bkeyes): revert this functional gauge stuff, go back to the 'metric-func' tag, but keep the ability to look at both methods and fields?
 	case functionalGaugeType:
 		fn, err := getGaugeFunction[int64](v, f.Name)
 		if err != nil {
@@ -267,33 +268,6 @@ func createField(v reflect.Value, f reflect.StructField, metricName string) erro
 
 	v.FieldByIndex(f.Index).Set(reflect.ValueOf(value))
 	return nil
-}
-
-func getGaugeFunction[N int64 | float64, F func() N](v reflect.Value, fieldName string) (F, error) {
-	name := GaugeFunctionPrefix + fieldName
-
-	m := v.Addr().MethodByName(name)
-	if !m.IsValid() {
-		// A method does not exist, look for a field with the name instead
-		m = v.FieldByName(name)
-		if !m.IsValid() {
-			return nil, fmt.Errorf("%s: method or field does not exist", name)
-		}
-		if m.Type().Kind() != reflect.Func {
-			return nil, fmt.Errorf("%s: field must be a function", name)
-		}
-	}
-
-	if m.Type().NumIn() != 0 {
-		return nil, fmt.Errorf("%s: function must take no parameters", name)
-	}
-	if m.Type().NumOut() != 1 {
-		return nil, fmt.Errorf("%s: function must return a single value", name)
-	}
-	if m.Type().Out(0) != reflect.TypeOf(N(0)) {
-		return nil, fmt.Errorf("%s: function must return a value of type %T", name, N(0))
-	}
-	return m.Interface().(F), nil
 }
 
 func parseSample(s string) (func() metrics.Sample, error) {
