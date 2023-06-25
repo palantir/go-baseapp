@@ -23,8 +23,6 @@ import (
 	"github.com/rcrowley/go-metrics"
 )
 
-// TODO(bkeyes): package and function docs
-
 const (
 	MetricTag       = "metric"
 	MetricSampleTag = "metric-sample"
@@ -46,6 +44,86 @@ var (
 	timerType                  = reflect.TypeOf((*metrics.Timer)(nil)).Elem()
 )
 
+// New creates a new metrics struct. The type M must be a struct and should
+// have one or more fields that have the "metric" tag. New allocates a new
+// struct and populates all of the tagged metric fields.
+//
+// The metric tag gives the name of the associated metric in the registry.
+// Every field with this tag must be one of the supported metric interface
+// types:
+//
+//   - [metrics.Counter]
+//   - [metrics.Gauge]
+//   - [metrics.GaugeFloat64]
+//   - [metrics.Histogram]
+//   - [metrics.Meter]
+//   - [metrics.Timer]
+//   - [Tagged]
+//
+// For example, this struct defines two metrics, a counter and a gauge:
+//
+//	type M struct {
+//		APIResponses metrics.Counter `metric:"api.responses"`
+//		Workers	     metrics.Gauge   `metric:"workers"`
+//	}
+//
+// New panics if any aspect of the struct definition is invalid. New does not
+// register the metrics with a registry. Call [Register] with the new struct to
+// make the metrics available to emitters and other clients.
+//
+// By default, each metric registers as the static name given in the "metric"
+// tag. You can define metrics with dynamic names by using the [Tagged]
+// interface; see that type for more details.
+//
+// If the metric is a histogram or a timer, the field may also set the
+// "metric-sample" tag. This tag defines the sample type for the metric's
+// histogram. The tag value is a comma-separated list of the sample type and
+// the sample's parameters. The supported types are:
+//
+//   - "uniform": optionally acepts an integer for the reservoir size
+//   - "expdecay": optionally accepts an integer for the reservoir size and a
+//     float for the alpha value; you must set both or neither value
+//
+// For example:
+//
+//	type M struct {
+//		DownloadSize    metrics.Histogram `metric:"download.size" metric-sample:"uniform,100"`
+//		DownloadLatency metrics.Time      `metric:"download.latency" metric-sample:"expdecay,1028,0.015"`
+//	}
+//
+// See [rcrowley/go-metrics] for an explanation of the differences between
+// sample types.
+//
+// If the tag is not set, the histogram uses an exponentially decaying sample
+// with DefaultReservoirSize and DefaultExpDecayAlpha. These values are also
+// used when the reservoir size and alpha are not specified.
+//
+// Metric fields can also be one of the functional metric interface types:
+//
+//   - [FunctionalGauge]
+//   - [FunctionalGaugeFloat64]
+//
+// A functional metrics execute a function each time a client requests its
+// value. Each functional metric must have a corresponding exported method or
+// function field that is the field name with the "Compute" prefix.
+// For example:
+//
+//	type M struct {
+//		QueueLength FunctionalGauge		   `metric:"queue_length"`
+//		Temperature FunctionalGaugeFloat64 `metric:"temperature"`
+//
+//		ComputeQueueLength func() int64
+//	}
+//
+//	func (m *M) ComputeTemperature() float64 {
+//		return getCurrentTemperature()
+//	}
+//
+// New panics if a functional metric is missing its compute function or if the
+// function has the wrong type. At this time, functional metrics to not support
+// tagging.
+//
+// [rcrowley/go-metrics]: https://pkg.go.dev/github.com/rcrowley/go-metrics
 func New[M any]() *M {
 	var m M
 

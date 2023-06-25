@@ -26,11 +26,33 @@ var (
 )
 
 // Tagged is a metric with dynamic tags. The type M must be one of the
-// supported metric types exported by rcrowley/go-metrics.
+// supported metric types.
 //
 // The Tag method returns an instance of the metric that reports with the given
 // tags. Tags may be either plain values or key and values separated by a
 // colon.
+//
+// While Tagged metrics can be used directly, it's helpful to wrap them in a
+// function that accepts the expected tag values using the correct types. For
+// example:
+//
+//	struct M {
+//		Responses Tagged[metrics.Counter] `metric:"responses"`
+//	}
+//
+//	func (m *M) ResponsesByTypeAndStatus(typ string, status int) metrics.Counter {
+//		return m.Responses.Tag("type:" + type, "status:" + strconv.Itoa(stats))
+//	}
+//
+// Tags are added as a suffix to the base metric name: the tags are joined by
+// commas, then surrounded by square brackets. Using the previous example, the
+// full metric names might be:
+//
+//   - "responses[type:api,status:200]"
+//   - "responses[type:file,status:404]"
+//
+// Note that each unique combination of tags produces a separate metric in the
+// registry. For this reason avoid tags that can take many values, like IDs.
 type Tagged[M any] interface {
 	Tag(tags ...string) M
 }
