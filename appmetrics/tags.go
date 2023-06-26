@@ -26,11 +26,8 @@ var (
 )
 
 // Tagged is a metric with dynamic tags. The type M must be one of the
-// supported metric types.
-//
-// The Tag method returns an instance of the metric that reports with the given
-// tags. Tags may be either plain values or key and values separated by a
-// colon.
+// supported metric types. Tags are strings that can either be plain values or
+// key-value pairs where the key and value are separated by a colon.
 //
 // While Tagged metrics can be used directly, it's helpful to wrap them in a
 // function that accepts the expected tag values using the correct types. For
@@ -54,6 +51,9 @@ var (
 // Note that each unique combination of tags produces a separate metric in the
 // registry. For this reason avoid tags that can take many values, like IDs.
 type Tagged[M any] interface {
+	// Tag returns an instance of the metric that reports with the given tags.
+	// Tags may be either plain values or key-value pairs separated by a colon.
+	// Tag trims whitespace from each tag and ignores any empty tags.
 	Tag(tags ...string) M
 }
 
@@ -64,14 +64,31 @@ type taggedMetric[M any] struct {
 }
 
 func (m *taggedMetric[M]) Tag(tags ...string) M {
-	name := m.name
-	if len(tags) > 0 {
-		name += "[" + strings.Join(tags, ",") + "]"
-	}
 	if m.r == nil {
 		return m.newMetric()
 	}
-	return m.r.GetOrRegister(name, m.newMetric).(M)
+
+	var name strings.Builder
+	name.WriteString(m.name)
+
+	var n int
+	for _, t := range tags {
+		t = strings.TrimSpace(t)
+		if t != "" {
+			if n == 0 {
+				name.WriteString("[")
+			} else {
+				name.WriteString(",")
+			}
+			name.WriteString(t)
+			n++
+		}
+	}
+	if n > 0 {
+		name.WriteString("]")
+	}
+
+	return m.r.GetOrRegister(name.String(), m.newMetric).(M)
 }
 
 func (m *taggedMetric[M]) register(r metrics.Registry) {
