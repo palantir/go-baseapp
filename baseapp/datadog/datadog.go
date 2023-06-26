@@ -48,6 +48,12 @@ const (
 	DefaultInterval = 10 * time.Second
 )
 
+var (
+	// TimerUnits sets the units used when exporting metrics.Timer metrics. By
+	// default, use the native unit of nanoseconds.
+	TimerUnits = time.Nanosecond
+)
+
 type Config struct {
 	Address  string        `yaml:"address" json:"address"`
 	Interval time.Duration `yaml:"interval" json:"interval"`
@@ -145,13 +151,13 @@ func (e *Emitter) EmitOnce() {
 
 		case metrics.Timer:
 			ms := m.Snapshot()
-			_ = e.client.Gauge(name+".avg", ms.Mean(), tags, 1)
-			_ = e.client.Gauge(name+".count", float64(ms.Count()), tags, 1)
-			_ = e.client.Gauge(name+".max", float64(ms.Max()), tags, 1)
-			_ = e.client.Gauge(name+".median", ms.Percentile(0.5), tags, 1)
-			_ = e.client.Gauge(name+".min", float64(ms.Min()), tags, 1)
-			_ = e.client.Gauge(name+".sum", float64(ms.Sum()), tags, 1)
-			_ = e.client.Gauge(name+".95percentile", ms.Percentile(0.95), tags, 1)
+			_ = e.client.Gauge(name+".avg", convertTime(ms.Mean()), tags, 1)
+			_ = e.client.Gauge(name+".count", convertTime(ms.Count()), tags, 1)
+			_ = e.client.Gauge(name+".max", convertTime(ms.Max()), tags, 1)
+			_ = e.client.Gauge(name+".median", convertTime(ms.Percentile(0.5)), tags, 1)
+			_ = e.client.Gauge(name+".min", convertTime(ms.Min()), tags, 1)
+			_ = e.client.Gauge(name+".sum", convertTime(ms.Sum()), tags, 1)
+			_ = e.client.Gauge(name+".95percentile", convertTime(ms.Percentile(0.95)), tags, 1)
 		}
 	})
 }
@@ -172,4 +178,8 @@ func tagsFromName(name string) (string, []string) {
 	sort.Strings(tags)
 
 	return name[:start], tags
+}
+
+func convertTime[N int64 | float64](n N) float64 {
+	return float64(n) / float64(TimerUnits)
 }
