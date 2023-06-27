@@ -16,6 +16,7 @@ package appmetrics
 
 import (
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/rcrowley/go-metrics"
@@ -71,20 +72,14 @@ func (m *taggedMetric[M]) Tag(tags ...string) M {
 	var name strings.Builder
 	name.WriteString(m.name)
 
-	var n int
-	for _, t := range tags {
-		t = strings.TrimSpace(t)
-		if t != "" {
-			if n == 0 {
-				name.WriteString("[")
-			} else {
+	if tags := cleanAndSortTags(tags); len(tags) > 0 {
+		name.WriteString("[")
+		for i, t := range tags {
+			if i > 0 {
 				name.WriteString(",")
 			}
 			name.WriteString(t)
-			n++
 		}
-	}
-	if n > 0 {
 		name.WriteString("]")
 	}
 
@@ -119,4 +114,16 @@ func isTagged(typ reflect.Type) (bool, reflect.Type) {
 		return false, nil
 	}
 	return true, mt.Out(0)
+}
+
+func cleanAndSortTags(tags []string) []string {
+	cleanTags := make([]string, 0, len(tags))
+	for _, t := range tags {
+		t = strings.TrimSpace(t)
+		if t != "" {
+			cleanTags = append(cleanTags, t)
+		}
+	}
+	sort.Strings(cleanTags)
+	return cleanTags
 }
