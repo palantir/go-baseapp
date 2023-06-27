@@ -157,7 +157,7 @@ func (e *Emitter) EmitOnce() {
 		case metrics.Timer:
 			ms := m.Snapshot()
 			_ = e.client.Gauge(name+".avg", convertTime(ms.Mean()), tags, 1)
-			_ = e.client.Gauge(name+".count", convertTime(ms.Count()), tags, 1)
+			_ = e.client.Gauge(name+".count", float64(ms.Count()), tags, 1)
 			_ = e.client.Gauge(name+".max", convertTime(ms.Max()), tags, 1)
 			_ = e.client.Gauge(name+".median", convertTime(ms.Percentile(0.5)), tags, 1)
 			_ = e.client.Gauge(name+".min", convertTime(ms.Min()), tags, 1)
