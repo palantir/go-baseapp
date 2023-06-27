@@ -49,10 +49,15 @@ const (
 )
 
 var (
-	// TimerUnits sets the units used when exporting metrics.Timer metrics. By
-	// default, use the native unit of nanoseconds.
-	TimerUnits = time.Nanosecond
+	timerUnit = time.Nanosecond
 )
+
+// SetTimerUnit sets the units used when exporting metrics.Timer metrics. By
+// default, times are reported in nanoseconds. You must call this function
+// before starting any Emitter instances.
+func SetTimerUnit(unit time.Duration) {
+	timerUnit = unit
+}
 
 type Config struct {
 	Address  string        `yaml:"address" json:"address"`
@@ -181,5 +186,5 @@ func tagsFromName(name string) (string, []string) {
 }
 
 func convertTime[N int64 | float64](n N) float64 {
-	return float64(n) / float64(TimerUnits)
+	return float64(n) / float64(timerUnit)
 }
