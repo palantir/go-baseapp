@@ -155,16 +155,24 @@ If enabled, the server emits the following metrics:
 | `server.requests.3xx` | `counter` | like `server.requests`, but only counting 3XX status codes |
 | `server.requests.4xx` | `counter` | like `server.requests`, but only counting 4XX status codes |
 | `server.requests.5xx` | `counter` | like `server.requests`, but only counting 5XX status codes |
-| `server.requests.latency` | `histogram` | the distribution of request response times |
+| `server.requests.latency` | `timer` | the latency of requests handled by the server |
+| `server.requests.2xx.latency` | `timer` | like `server.requests.latency`, but only counting 2XX status codes |
+| `server.requests.3xx.latency` | `timer` | like `server.requests.latency`, but only counting 3XX status codes |
+| `server.requests.4xx.latency` | `timer` | like `server.requests.latency`, but only counting 4XX status codes |
+| `server.requests.5xx.latency` | `timer` | like `server.requests.latency`, but only counting 5XX status codes |
 | `server.goroutines` | `gauge` | the number of active goroutines |
 | `server.mem.used` | `gauge` | the amount of memory used by the process in bytes |
 
-By default, `server.requests.latency` is reported in milliseconds. You can
-change this unit, as well as the unit used in request logs, by setting the
-global `zerolog.DurationFieldUnit` variable.
+Note that the `server.requests.latency` timers may be used instead of the basic
+`server.requests` counters, as they include counts and rates in addition to the
+latency distribution.
 
 The `baseapp/datadog` package provides an easy way to publish metrics to
 Datadog. Other aggregators can be configured with custom code in a similar way.
+
+Timer metrics are reported in nanoseconds. When exporting these metrics from
+the registry, you may wish to convert the units, for instance by calling
+`datadog.SetTimerUnit(time.Millisecond)`.
 
 ## Contributing
 

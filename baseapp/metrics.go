@@ -21,16 +21,15 @@ import (
 	"time"
 
 	"github.com/rcrowley/go-metrics"
-	"github.com/rs/zerolog"
 )
 
 const (
-	MetricsKeyRequests        = "server.requests"
-	MetricsKeyRequests2xx     = "server.requests.2xx"
-	MetricsKeyRequests3xx     = "server.requests.3xx"
-	MetricsKeyRequests4xx     = "server.requests.4xx"
-	MetricsKeyRequests5xx     = "server.requests.5xx"
-	MetricsKeyRequestsLatency = "server.requests.latency"
+	MetricsKeyRequests      = "server.requests"
+	MetricsKeyRequests2xx   = "server.requests.2xx"
+	MetricsKeyRequests3xx   = "server.requests.3xx"
+	MetricsKeyRequests4xx   = "server.requests.4xx"
+	MetricsKeyRequests5xx   = "server.requests.5xx"
+	MetricsKeyLatencySuffix = ".latency"
 
 	MetricsKeyNumGoroutines = "server.goroutines"
 	MetricsKeyMemoryUsed    = "server.mem.used"
@@ -64,11 +63,8 @@ func RegisterDefaultMetrics(registry metrics.Registry) {
 		MetricsKeyRequests5xx,
 	} {
 		metrics.GetOrRegisterCounter(key, registry)
+		metrics.GetOrRegisterTimer(key+MetricsKeyLatencySuffix, registry)
 	}
-
-	// Values copied from metrics.NewTimer, supposed to match UNIX load averages
-	sample := metrics.NewExpDecaySample(1028, 0.015)
-	metrics.GetOrRegisterHistogram(MetricsKeyRequestsLatency, registry, sample)
 
 	registry.GetOrRegister(MetricsKeyNumGoroutines, func() metrics.Gauge {
 		return metrics.NewFunctionalGauge(func() int64 {
@@ -92,14 +88,13 @@ func CountRequest(r *http.Request, status int, _ int64, elapsed time.Duration) {
 	if c := registry.Get(MetricsKeyRequests); c != nil {
 		c.(metrics.Counter).Inc(1)
 	}
-	if h := registry.Get(MetricsKeyRequestsLatency); h != nil {
-		// Adjust latency units to match the units used in request logs
-		h.(metrics.Histogram).Update(int64(elapsed / zerolog.DurationFieldUnit))
-	}
 
 	if key := bucketStatus(status); key != "" {
 		if c := registry.Get(key); c != nil {
 			c.(metrics.Counter).Inc(1)
+		}
+		if t := registry.Get(key + MetricsKeyLatencySuffix); t != nil {
+			t.(metrics.Timer).Update(elapsed)
 		}
 	}
 }
