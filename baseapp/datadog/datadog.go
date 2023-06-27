@@ -19,6 +19,8 @@
 package datadog
 
 import (
+	"time"
+
 	"github.com/DataDog/datadog-go/v5/statsd"
 	"github.com/palantir/go-baseapp/appmetrics/emitter/datadog"
 	"github.com/palantir/go-baseapp/baseapp"
@@ -29,6 +31,15 @@ const (
 	DefaultAddress  = datadog.DefaultAddress
 	DefaultInterval = datadog.DefaultInterval
 )
+
+// SetTimerUnit sets the units used when exporting metrics.Timer metrics. By
+// default, times are reported in nanoseconds. You must call this function
+// before starting any Emitter instances.
+//
+// Deprecated: Use the appmetrics/emitter/datadog package instead.
+func SetTimerUnit(unit time.Duration) {
+	datadog.SetTimerUnit(unit)
+}
 
 type Config = datadog.Config
 
