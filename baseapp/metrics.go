@@ -88,6 +88,9 @@ func CountRequest(r *http.Request, status int, _ int64, elapsed time.Duration) {
 	if c := registry.Get(MetricsKeyRequests); c != nil {
 		c.(metrics.Counter).Inc(1)
 	}
+	if t := registry.Get(MetricsKeyRequests + MetricsKeyLatencySuffix); t != nil {
+		t.(metrics.Timer).Update(elapsed)
+	}
 
 	if key := bucketStatus(status); key != "" {
 		if c := registry.Get(key); c != nil {
