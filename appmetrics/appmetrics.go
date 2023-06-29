@@ -28,6 +28,10 @@ const (
 	MetricSampleTag = "metric-sample"
 )
 
+// DefaultReservoirSize and DefaultExpDecayAlpha are the values used for
+// histogram sampling when the "metric-sample" tag is not present. They create
+// an exponentially-decaying sample with the same behavior as UNIX load
+// averages.
 const (
 	DefaultReservoirSize = 1028
 	DefaultExpDecayAlpha = 0.015
@@ -80,7 +84,7 @@ var (
 // histogram. The tag value is a comma-separated list of the sample type and
 // the sample's parameters. The supported types are:
 //
-//   - "uniform": optionally acepts an integer for the reservoir size
+//   - "uniform": optionally accepts an integer for the reservoir size
 //   - "expdecay": optionally accepts an integer for the reservoir size and a
 //     float for the alpha value; you must set both or neither value
 //
@@ -120,7 +124,7 @@ var (
 //	}
 //
 // New panics if a functional metric is missing its compute function or if the
-// function has the wrong type. At this time, functional metrics to not support
+// function has the wrong type. At this time, functional metrics do not support
 // tagging.
 //
 // [rcrowley/go-metrics]: https://pkg.go.dev/github.com/rcrowley/go-metrics
@@ -241,7 +245,7 @@ func isMetric(typ reflect.Type) bool {
 	case counterType, gaugeType, gaugeFloat64Type, histogramType, meterType, timerType:
 		return true
 	case functionalGaugeType, functionalGaugeFloat64Type:
-		// Functional gagues cannot be tagged because there's currently no way
+		// Functional gauges cannot be tagged because there's currently no way
 		// to pass the tags in to the function. Without this, every tag will
 		// report the same value, making the tags redundant.
 		return !tagged
