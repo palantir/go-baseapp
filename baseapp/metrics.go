@@ -83,6 +83,10 @@ func RegisterDefaultMetrics(registry metrics.Registry) {
 
 // CountRequest is an AccessCallback that records metrics about the request.
 func CountRequest(r *http.Request, status int, _ int64, elapsed time.Duration) {
+	if IsIgnored(r, IgnoreRule{Metrics: true}) {
+		return
+	}
+
 	registry := MetricsCtx(r.Context())
 
 	if c := registry.Get(MetricsKeyRequests); c != nil {
