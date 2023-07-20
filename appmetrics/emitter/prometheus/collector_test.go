@@ -122,28 +122,29 @@ invalid_metric_names_are_fun_ 0
 
 	t.Run("histogramQuantiles", func(t *testing.T) {
 		r := metrics.NewRegistry()
-		c := NewCollector(r, WithHistogramQuantiles([]float64{0.5, 0.9, 0.95, 0.99}))
+		c := NewCollector(r, WithHistogramQuantiles([]float64{0.25, 0.5, 0.75}))
 
-		hist := metrics.NewRegisteredHistogram("histogram", r, metrics.NewUniformSample(64))
-		for _, i := range []int64{10, 9, 15, 12, 20, 28, 8, 12, 20, 16, 17, 27, 11, 10, 20, 21, 19, 18, 10, 26} {
-			hist.Update(i)
+		hist := metrics.NewRegisteredHistogram("histogram", r, metrics.NewUniformSample(1024))
+		for _, v := range []int64{0, 2, 4, 6, 8} {
+			for i := 0; i < 10; i++ {
+				hist.Update(v)
+			}
 		}
 
 		expected := `
 # HELP histogram metrics.Histogram
 # TYPE histogram summary
-histogram{quantile="0.5"} 16.5
-histogram{quantile="0.9"} 26.900000000000002
-histogram{quantile="0.95"} 27.95
-histogram{quantile="0.99"} 28
-histogram_sum 329
-histogram_count 20
+histogram{quantile="0.25"} 2
+histogram{quantile="0.5"} 4
+histogram{quantile="0.75"} 6
+histogram_sum 200
+histogram_count 50
 # HELP histogram_max metrics.Histogram
 # TYPE histogram_max untyped
-histogram_max 28
+histogram_max 8
 # HELP histogram_min metrics.Histogram
 # TYPE histogram_min untyped
-histogram_min 8
+histogram_min 0
 `
 
 		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
@@ -153,28 +154,31 @@ histogram_min 8
 
 	t.Run("timerQuantiles", func(t *testing.T) {
 		r := metrics.NewRegistry()
-		c := NewCollector(r, WithTimerQuantiles([]float64{0.5, 0.9, 0.95, 0.99}))
+		c := NewCollector(r, WithTimerQuantiles([]float64{0.25, 0.5, 0.75}))
 
-		timer := metrics.NewRegisteredTimer("timer", r)
-		for _, i := range []int64{10, 9, 15, 12, 20, 28, 8, 12, 20, 16, 17, 27, 11, 10, 20, 21, 19, 18, 10, 26} {
-			timer.Update(time.Duration(i) * time.Millisecond)
+		timer := metrics.NewCustomTimer(metrics.NewHistogram(metrics.NewUniformSample(1024)), metrics.NewMeter())
+		for _, v := range []int64{0, 2, 4, 6, 8} {
+			for i := 0; i < 10; i++ {
+				timer.Update(time.Duration(v) * time.Millisecond)
+			}
 		}
+
+		_ = r.Register("timer", timer)
 
 		expected := `
 # HELP timer_max_seconds metrics.Timer
 # TYPE timer_max_seconds untyped
-timer_max_seconds 0.028
+timer_max_seconds 0.008
 # HELP timer_min_seconds metrics.Timer
 # TYPE timer_min_seconds untyped
-timer_min_seconds 0.008
+timer_min_seconds 0
 # HELP timer_seconds metrics.Timer
 # TYPE timer_seconds summary
-timer_seconds{quantile="0.5"} 0.0165
-timer_seconds{quantile="0.9"} 0.0269
-timer_seconds{quantile="0.95"} 0.02795
-timer_seconds{quantile="0.99"} 0.028
-timer_seconds_sum 0.329
-timer_seconds_count 20
+timer_seconds{quantile="0.25"} 0.002
+timer_seconds{quantile="0.5"} 0.004
+timer_seconds{quantile="0.75"} 0.006
+timer_seconds_sum 0.2
+timer_seconds_count 50
 `
 
 		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
