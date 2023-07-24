@@ -172,7 +172,7 @@ Datadog. Timer metrics are reported in nanoseconds. When exporting these
 metrics from the registry, you may wish to convert the units, for instance by
 calling `datadog.SetTimerUnit(time.Millisecond)`.
 
-The `appmetrics/emitter/prometheus` package provids an each way to expose
+The `appmetrics/emitter/prometheus` package provids an easy way to expose
 metrics on a Prometheus-compatible endpoint.
 
 ## Contributing
