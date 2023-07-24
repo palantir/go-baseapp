@@ -167,12 +167,13 @@ Note that the `server.requests.latency` timers may be used instead of the basic
 `server.requests` counters, as they include counts and rates in addition to the
 latency distribution.
 
-The `baseapp/datadog` package provides an easy way to publish metrics to
-Datadog. Other aggregators can be configured with custom code in a similar way.
+The `appmetrics/emitter/datadog` package provides an easy way to publish metrics to
+Datadog. Timer metrics are reported in nanoseconds. When exporting these
+metrics from the registry, you may wish to convert the units, for instance by
+calling `datadog.SetTimerUnit(time.Millisecond)`.
 
-Timer metrics are reported in nanoseconds. When exporting these metrics from
-the registry, you may wish to convert the units, for instance by calling
-`datadog.SetTimerUnit(time.Millisecond)`.
+The `appmetrics/emitter/prometheus` package provids an easy way to expose
+metrics on a Prometheus-compatible endpoint.
 
 ## Contributing
 
