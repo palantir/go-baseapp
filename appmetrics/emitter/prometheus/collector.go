@@ -174,12 +174,13 @@ func (c *Collector) descFromName(name string, help string) func(string) *prometh
 // labelsFromName extracts the labels from a metric name and returns the
 // sanitized base name and the sanitized labels.
 func labelsFromName(name string) (string, prometheus.Labels) {
+	labels := make(prometheus.Labels)
+
 	start := strings.IndexRune(name, '[')
 	if start < 0 || name[len(name)-1] != ']' {
-		return sanitizeName(name), nil
+		return sanitizeName(name), labels
 	}
 
-	labels := make(prometheus.Labels)
 	labelPairs := strings.Split(name[start+1:len(name)-1], ",")
 	for _, pair := range labelPairs {
 		key, value, ok := strings.Cut(strings.TrimSpace(pair), ":")
