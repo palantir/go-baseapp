@@ -87,15 +87,20 @@ timer_seconds_count 0
 
 		counterA := metrics.NewRegisteredCounter("counter[subsystem:a,role:server]", r)
 		counterB := metrics.NewRegisteredCounter("counter[subsystem:b,role:server]", r)
+		counterC := metrics.NewRegisteredCounter("unlabeled_counter", r)
 
 		counterA.Inc(1)
 		counterB.Inc(2)
+		counterC.Inc(3)
 
 		expected := `
 # HELP counter metrics.Counter
 # TYPE counter untyped
 counter{role="server",subsystem="a",test="labels"} 1
 counter{role="server",subsystem="b",test="labels"} 2
+# HELP unlabeled_counter metrics.Counter
+# TYPE unlabeled_counter untyped
+unlabeled_counter{test="labels"} 3
 `
 
 		if err := testutil.CollectAndCompare(c, strings.NewReader(expected)); err != nil {
