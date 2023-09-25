@@ -10,7 +10,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
-	github.com/rs/zerolog v1.30.0
+	github.com/rs/zerolog v1.31.0
 	github.com/stretchr/testify v1.8.4
 	goji.io v2.0.0+incompatible
 	golang.org/x/oauth2 v0.12.0
@@ -27,8 +27,8 @@ require (
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/mattermost/xml-roundtrip-validator v0.1.0 // indirect
-	github.com/mattn/go-colorable v0.1.12 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
