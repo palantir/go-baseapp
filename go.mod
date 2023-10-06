@@ -13,7 +13,7 @@ require (
 	github.com/rs/zerolog v1.31.0
 	github.com/stretchr/testify v1.8.4
 	goji.io v2.0.0+incompatible
-	golang.org/x/oauth2 v0.12.0
+	golang.org/x/oauth2 v0.13.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
