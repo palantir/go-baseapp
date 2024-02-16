@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/DataDog/datadog-go/v5 v5.5.0
-	github.com/bluekeyes/hatpear v0.1.1
+	github.com/bluekeyes/hatpear v0.1.2
 	github.com/crewjam/saml v0.4.14
 	github.com/gorilla/sessions v1.2.2
 	github.com/pkg/errors v0.9.1
