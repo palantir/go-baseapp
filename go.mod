@@ -13,7 +13,7 @@ require (
 	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.9.0
 	goji.io v2.0.2+incompatible
-	golang.org/x/oauth2 v0.20.0
+	golang.org/x/oauth2 v0.21.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -34,9 +34,9 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/russellhaering/goxmldsig v1.3.0 // indirect
-	golang.org/x/crypto v0.23.0 // indirect
-	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/crypto v0.24.0 // indirect
+	golang.org/x/net v0.26.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
