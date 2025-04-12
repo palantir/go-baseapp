@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/DataDog/datadog-go/v5 v5.6.0
 	github.com/bluekeyes/hatpear v0.1.2
-	github.com/crewjam/saml v0.4.14
+	github.com/crewjam/saml v0.5.0
 	github.com/gorilla/sessions v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.21.1
@@ -19,7 +19,7 @@ require (
 
 require (
 	github.com/Microsoft/go-winio v0.5.0 // indirect
-	github.com/beevik/etree v1.1.0 // indirect
+	github.com/beevik/etree v1.5.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -36,7 +36,7 @@ require (
 	github.com/prometheus/common v0.62.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
-	github.com/russellhaering/goxmldsig v1.3.0 // indirect
+	github.com/russellhaering/goxmldsig v1.4.0 // indirect
 	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/net v0.39.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
