@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/DataDog/datadog-go/v5 v5.6.0
 	github.com/bluekeyes/hatpear v0.1.2
-	github.com/crewjam/saml v0.5.0
+	github.com/crewjam/saml v0.5.1
 	github.com/gorilla/sessions v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.21.1
