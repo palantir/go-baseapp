@@ -150,6 +150,18 @@ func (s *ServiceProvider) getSAMLSettingsForRequest(r *http.Request) *saml.Servi
 // DoAuth takes an http.ResponseWriter that has not been written to yet, and conducts and SP initiated login
 // If the flow proceeds correctly the user should be redirected to the handler provided by ACSHandler().
 func (s *ServiceProvider) DoAuth(w http.ResponseWriter, r *http.Request) {
+	s.handleAuth(w, r, "")
+}
+
+// DoAuthWithRelayState similar to DoAuth, but allow to pass in relayState, and allow ACSHandler() to retrieve it back
+// from the SAML response.
+func (s *ServiceProvider) DoAuthWithRelayState(relayState string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s.handleAuth(w, r, relayState)
+	})
+}
+
+func (s *ServiceProvider) handleAuth(w http.ResponseWriter, r *http.Request, relayState string) {
 	sp := s.getSAMLSettingsForRequest(r)
 
 	request, err := sp.MakeAuthenticationRequest(sp.GetSSOBindingLocation(saml.HTTPRedirectBinding), saml.HTTPRedirectBinding, saml.HTTPPostBinding)
@@ -163,7 +175,7 @@ func (s *ServiceProvider) DoAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	target, err := request.Redirect("", sp)
+	target, err := request.Redirect(relayState, sp)
 	if err != nil {
 		s.onError(w, r, newError(errors.Wrap(err, "failed to generate redirect URL"), http.StatusInternalServerError))
 		return
