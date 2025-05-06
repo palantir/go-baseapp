@@ -44,3 +44,10 @@ s.Mux().HandleFunc(pat.Get("/auth"), sp.DoAuth)
 
 _ = s.Start()
 ```
+
+As an alternative, you can pass in relayState by using the `DoAuthWithRelayState()` function as shown below:
+```golang
+s.Mux().Handle(pat.Get("/auth/state"), sp.DoAuthWithRelayState("yourstate"))
+```
+Please note that this package does not perform validation on the relayState. If the RelayState parameter is expected 
+to be a URL, ensure that the URL is properly validated and explicitly included on an allowlist to prevent open redirect attacks.
