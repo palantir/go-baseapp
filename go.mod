@@ -6,7 +6,7 @@ require (
 	github.com/DataDog/datadog-go/v5 v5.6.0
 	github.com/bluekeyes/hatpear v0.1.2
 	github.com/crewjam/saml v0.5.1
-	github.com/gorilla/sessions v1.3.0
+	github.com/gorilla/sessions v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.0
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9
