@@ -1,5 +1,5 @@
 <p align="right">
-<a href="https://autorelease.general.dmz.palantir.tech/palantir/policy-bot"><img src="https://img.shields.io/badge/Perform%20an-Autorelease-success.svg" alt="Autorelease"></a>
+<a href="https://autorelease.general.dmz.palantir.tech/palantir/go-baseapp"><img src="https://img.shields.io/badge/Perform%20an-Autorelease-success.svg" alt="Autorelease"></a>
 </p>
 
 # go-baseapp [![GoDoc](https://godoc.org/github.com/palantir/go-baseapp?status.svg)](http://godoc.org/github.com/palantir/go-baseapp)
