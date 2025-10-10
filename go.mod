@@ -3,7 +3,7 @@ module github.com/palantir/go-baseapp
 go 1.25.0
 
 require (
-	github.com/DataDog/datadog-go/v5 v5.8.0
+	github.com/DataDog/datadog-go/v5 v5.8.1
 	github.com/bluekeyes/hatpear v0.1.2
 	github.com/crewjam/saml v0.5.1
 	github.com/gorilla/sessions v1.4.0
