@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	strSliceType = reflect.TypeOf([]string(nil))
+	strSliceType = reflect.TypeFor[[]string]()
 )
 
 // Tagged is a metric with dynamic tags. The type M must be one of the
