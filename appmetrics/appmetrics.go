@@ -38,14 +38,14 @@ const (
 )
 
 var (
-	counterType                = reflect.TypeOf((*metrics.Counter)(nil)).Elem()
-	gaugeType                  = reflect.TypeOf((*metrics.Gauge)(nil)).Elem()
-	functionalGaugeType        = reflect.TypeOf((*FunctionalGauge)(nil)).Elem()
-	gaugeFloat64Type           = reflect.TypeOf((*metrics.GaugeFloat64)(nil)).Elem()
-	functionalGaugeFloat64Type = reflect.TypeOf((*FunctionalGaugeFloat64)(nil)).Elem()
-	histogramType              = reflect.TypeOf((*metrics.Histogram)(nil)).Elem()
-	meterType                  = reflect.TypeOf((*metrics.Meter)(nil)).Elem()
-	timerType                  = reflect.TypeOf((*metrics.Timer)(nil)).Elem()
+	counterType                = reflect.TypeFor[metrics.Counter]()
+	gaugeType                  = reflect.TypeFor[metrics.Gauge]()
+	functionalGaugeType        = reflect.TypeFor[FunctionalGauge]()
+	gaugeFloat64Type           = reflect.TypeFor[metrics.GaugeFloat64]()
+	functionalGaugeFloat64Type = reflect.TypeFor[FunctionalGaugeFloat64]()
+	histogramType              = reflect.TypeFor[metrics.Histogram]()
+	meterType                  = reflect.TypeFor[metrics.Meter]()
+	timerType                  = reflect.TypeFor[metrics.Timer]()
 )
 
 // New creates a new metrics struct. The type M must be a struct and should

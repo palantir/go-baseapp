@@ -131,7 +131,7 @@ invalid_metric_names_are_fun_ 0
 
 		hist := metrics.NewRegisteredHistogram("histogram", r, metrics.NewUniformSample(1024))
 		for _, v := range []int64{0, 2, 4, 6, 8} {
-			for i := 0; i < 10; i++ {
+			for range 10 {
 				hist.Update(v)
 			}
 		}
@@ -163,7 +163,7 @@ histogram_min 0
 
 		timer := metrics.NewCustomTimer(metrics.NewHistogram(metrics.NewUniformSample(1024)), metrics.NewMeter())
 		for _, v := range []int64{0, 2, 4, 6, 8} {
-			for i := 0; i < 10; i++ {
+			for range 10 {
 				timer.Update(time.Duration(v) * time.Millisecond)
 			}
 		}

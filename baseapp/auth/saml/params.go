@@ -19,8 +19,9 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"encoding/xml"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 
 	"github.com/crewjam/saml"
 	"github.com/pkg/errors"
@@ -29,7 +30,7 @@ import (
 func WithCertificateFromFile(path string) Param {
 
 	return func(sp *ServiceProvider) error {
-		certBytes, err := ioutil.ReadFile(path)
+		certBytes, err := os.ReadFile(path)
 		if err != nil {
 			return errors.Wrap(err, "could not read provided certificate file")
 		}
@@ -55,7 +56,7 @@ func WithCertificateFromBytes(certBytes []byte) Param {
 
 func WithKeyFromFile(path string) Param {
 	return func(sp *ServiceProvider) error {
-		keyBytes, err := ioutil.ReadFile(path)
+		keyBytes, err := os.ReadFile(path)
 		if err != nil {
 			return errors.Wrap(err, "could not read provided key file")
 		}
@@ -97,7 +98,7 @@ func WithEntityFromURL(url string) Param {
 		}
 
 		defer func() { _ = resp.Body.Close() }()
-		descriptor, err := ioutil.ReadAll(resp.Body)
+		descriptor, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return errors.Wrap(err, "failed to download IDP metadata")
 		}
