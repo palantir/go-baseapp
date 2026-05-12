@@ -51,6 +51,10 @@ var (
 //
 // Note that each unique combination of tags produces a separate metric in the
 // registry. For this reason avoid tags that can take many values, like IDs.
+//
+// Tagged metrics are lazy and do not appear in the registry until the first
+// call to [Tag]. Applications that use a known set of tags may wish to
+// pre-register metrics by calling [Tag] during application startup.
 type Tagged[M any] interface {
 	// Tag returns an instance of the metric that reports with the given tags.
 	// Tags may be either plain values or key-value pairs separated by a colon.
@@ -88,9 +92,6 @@ func (m *taggedMetric[M]) Tag(tags ...string) M {
 
 func (m *taggedMetric[M]) register(r metrics.Registry) {
 	m.r = r
-
-	// Add the bare metric immediately so emitters can find it in the registry
-	r.GetOrRegister(m.name, m.newMetric)
 }
 
 // isTagged determines if typ is a Tagged instantiation and returns the
