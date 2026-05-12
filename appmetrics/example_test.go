@@ -59,7 +59,6 @@ func Example() {
 	})
 
 	// Unordered output: counter: 5
-	// counter.tagged: 0
 	// counter.tagged[foo]: 1
 	// counter.tagged[bar]: 1
 	// gauge: 42
