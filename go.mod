@@ -2,6 +2,8 @@ module github.com/palantir/go-baseapp
 
 go 1.26.0
 
+toolchain go1.26.3
+
 require (
 	github.com/DataDog/datadog-go/v5 v5.8.3
 	github.com/bluekeyes/hatpear v0.1.2
