@@ -5,7 +5,7 @@ go 1.26.0
 toolchain go1.26.4
 
 require (
-	github.com/DataDog/datadog-go/v5 v5.8.3
+	github.com/DataDog/datadog-go/v5 v5.9.0
 	github.com/bluekeyes/hatpear v0.1.2
 	github.com/crewjam/saml v0.5.1
 	github.com/gorilla/sessions v1.4.0
