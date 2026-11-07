@@ -15,12 +15,13 @@
 package main
 
 import (
+	"bytes"
 	"os"
 
 	"github.com/palantir/go-baseapp/baseapp"
 	"github.com/palantir/go-baseapp/baseapp/datadog"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	"go.yaml.in/yaml/v4"
 )
 
 type Config struct {
@@ -38,12 +39,14 @@ type AppConfig struct {
 func ReadConfig(path string) (Config, error) {
 	var c Config
 
-	bytes, err := os.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return c, errors.Wrapf(err, "failed reading server config file: %s", path)
 	}
 
-	if err := yaml.UnmarshalStrict(bytes, &c); err != nil {
+	dec := yaml.NewDecoder(bytes.NewReader(data))
+	dec.KnownFields(true)
+	if err := dec.Decode(&c); err != nil {
 		return c, errors.Wrap(err, "failed parsing configuration file")
 	}
 
