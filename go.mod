@@ -7,7 +7,7 @@ toolchain go1.27.3
 require (
 	github.com/DataDog/datadog-go/v5 v5.9.1
 	github.com/bluekeyes/hatpear v0.1.2
-	github.com/crewjam/saml v0.5.2
+	github.com/crewjam/saml v0.6.1
 	github.com/gorilla/sessions v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.25.0
@@ -28,7 +28,6 @@ require (
 	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
-	github.com/mattermost/xml-roundtrip-validator v0.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
