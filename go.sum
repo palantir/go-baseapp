@@ -12,8 +12,8 @@ github.com/bluekeyes/hatpear v0.1.2/go.mod h1:2bh+rl4wLhqzzL0hT7Q4SVGXIivrE8oKgH
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/crewjam/saml v0.6.2 h1:OylNxA0cRSLAq8UBOU2QMEMYy8eStUMxNcEavtzUeWE=
-github.com/crewjam/saml v0.6.2/go.mod h1:7H5d46arM5wE5h/KXGIXFFEKq1Rv1H8jiwxzRUfQ3Ys=
+github.com/crewjam/saml v0.6.3 h1:Hs1bP4ttHUsmFuBmCUJr/lwmLbnwey17PQyeouolad0=
+github.com/crewjam/saml v0.6.3/go.mod h1:7H5d46arM5wE5h/KXGIXFFEKq1Rv1H8jiwxzRUfQ3Ys=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golang/mock v1.6.0/go.mod h1:p6yTPP+5HYm5mzsMV8JkE6ZKdX+/wYM6Hr+LicevLPs=
