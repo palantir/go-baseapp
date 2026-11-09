@@ -15,7 +15,6 @@
 package main
 
 import (
-	"bytes"
 	"os"
 
 	"github.com/palantir/go-baseapp/baseapp"
@@ -44,9 +43,7 @@ func ReadConfig(path string) (Config, error) {
 		return c, errors.Wrapf(err, "failed reading server config file: %s", path)
 	}
 
-	dec := yaml.NewDecoder(bytes.NewReader(data))
-	dec.KnownFields(true)
-	if err := dec.Decode(&c); err != nil {
+	if err := yaml.Load(data, &c, yaml.WithKnownFields()); err != nil {
 		return c, errors.Wrap(err, "failed parsing configuration file")
 	}
 
